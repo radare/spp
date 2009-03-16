@@ -1,0 +1,12 @@
+spp - simple pre processor
+==========================
+
+Configuration:
+  # Edit the config.h file before typing 'make'
+
+Build:
+  make
+
+Installation:
+
+  make install PREFIX=/usr
