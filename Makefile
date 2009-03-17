@@ -1,4 +1,4 @@
-CFLAGS=-g -Wall
+CFLAGS=-g -Wall -MD
 BINDIR=${DESTDIR}${PREFIX}/bin
 INSTALL_BIN=install -m 0755
 OBJ=spp.o
@@ -6,10 +6,10 @@ BIN=spp
 
 all: ${BIN}
 
-config.h: config.def.h
+config.h:
 	cp config.def.h config.h
 
-${BIN}: ${OBJ} config.h
+${BIN}: config.h ${OBJ}
 	${CC} ${LDFLAGS} -o ${BIN} ${OBJ}
 
 install:
@@ -17,3 +17,5 @@ install:
 
 clean:
 	-rm -f ${BIN} ${OBJ}
+
+-include spp.d

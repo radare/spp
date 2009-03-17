@@ -37,7 +37,7 @@ TAG_CALLBACK(cpp_include)
 #define TAG_BEGIN 1
 #define ECHO 1
 
-struct Tag tags[] = {
+struct Tag cpp_tags[] = {
 	{ "if", cpp_if },
 	{ "endif", cpp_endif },
 	{ "include", cpp_include },
@@ -49,3 +49,31 @@ struct Tag tags[] = {
 	{ NULL }
 };
 
+/* arguments */
+
+ARG_CALLBACK(cpp_arg_i)
+{
+	printf("INCLUDEDIR(%s)\n", arg);
+}
+
+ARG_CALLBACK(cpp_arg_d)
+{
+	printf("USERDEFINE(%s)\n", arg);
+}
+
+struct Arg cpp_args[] = {
+	{ "-I", "add include directory", 1, cpp_arg_i },
+	{ "-D", "define value of variable", 1, cpp_arg_d },
+	{ NULL }
+};
+
+struct Proc cpp_proc = {
+	.name = "cpp",
+	.tags = (struct Tag **)cpp_tags,
+	.args = (struct Arg **)cpp_args,
+	.token = TOKEN,
+	.tag_pre = TAG_PRE,
+	.tag_post = TAG_POST,
+	.default_echo = ECHO,
+	.tag_begin = TAG_BEGIN,
+};

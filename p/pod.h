@@ -25,16 +25,24 @@ TAG_CALLBACK(pod_head1)
 	fprintf(out, "\n");
 }
 
-#define TAG_PRE "="
-#define TAG_POST "\n"
-#define TOKEN " "
-#define TAG_BEGIN 1
-#define ECHO 0
-
-struct Tag tags[] = {
+struct Tag pod_tags[] = {
 	{ "head1", pod_head1 },
 	{ "cut", pod_cut },
 	{ NULL, pod_default },
-	NULL
+	{ NULL }
 };
 
+struct Arg pod_args[] = {
+	{ NULL }
+};
+
+struct Proc pod_proc = {
+	.name = "pod",
+	.tags = (struct Tag **)pod_tags,
+	.args = (struct Arg **)pod_args,
+	.token = " ",
+	.tag_pre = "=",
+	.tag_post = "\n",
+	.default_echo = 0,
+	.tag_begin = 1,
+};

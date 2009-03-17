@@ -2,18 +2,26 @@
 
 TAG_CALLBACK(sh_default)
 {
-	//printf("system(%s)\n", buf);
+	// printf("system(%s)\n", buf);
 	system(buf);
 }
 
-#define TAG_PRE "{{"
-#define TAG_POST "}}"
-#define TOKEN NULL
-#define TAG_BEGIN 0
-#define ECHO 1
-
-struct Tag tags[] = {
+struct Tag sh_tags[] = {
 	{ NULL, sh_default },
-	NULL
+	{ NULL }
 };
 
+struct Arg sh_args[] = {
+	{ NULL }
+};
+
+struct Proc sh_proc = {
+	.name = "sh",
+	.tags = (struct Tag **)sh_tags,
+	.args = (struct Arg **)sh_args,
+	.token = NULL,
+	.tag_pre = "{{",
+	.tag_post = "}}",
+	.default_echo = 1,
+	.tag_begin = 0,
+};
