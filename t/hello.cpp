@@ -5,5 +5,24 @@ This is a hello cpp world
 #if visible
 This text is visible
 #endif
+
+#ifdef SECRET
+
+                UG
+       BUGB    B     GBUG
+           UG  G    BU
+             BUGBUGBUGBU
+    BUG   BUGBUGBUGBUGBUGBUG
+      BUGBUGBUGBUGBUGBUGBUGBUG
+      BUGBUGBUGBUGBUGBUGBUGBUG
+    BUG   BUGBUGBUGBUGBUGBUG
+             BUGBUGBUGBU
+           UG  G    BU
+       BUGB    B     GBUG
+                UG
+
+#endif
+
 #error Oops
+
 this will not be visible

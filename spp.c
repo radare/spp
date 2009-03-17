@@ -189,6 +189,7 @@ void spp_proc_set(struct Proc *p, char *arg, int fail)
 
 int main(int argc, char **argv)
 {
+	int dostdin = 1;
 	int i, j;
 	FILE *out = stdout;
 	char *arg;
@@ -248,9 +249,13 @@ int main(int argc, char **argv)
 			} else {
 				if (i == argc)
 					fprintf(stderr, "No file specified.\n");
-				else spp_file(argv[i], stdout);
+				else {
+					spp_file(argv[i], stdout);
+					dostdin = 0;
+				}
 			}
 		}
+		if (dostdin) spp_io(stdin, out);
 	}
 	return 0;
 }

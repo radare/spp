@@ -8,24 +8,43 @@ TAG_CALLBACK(cpp_default)
 TAG_CALLBACK(cpp_error)
 {
 	fprintf(out,"\n");
-	if (buf==NULL)
-		return;
-	fprintf(out, "ERROR: %s\n", buf);
-	exit(1);
+	if (echo && buf != NULL) {
+		fprintf(out, "ERROR: %s\n", buf);
+		exit(1);
+	}
 }
 
 TAG_CALLBACK(cpp_if)
 {
-	/* TODO: check condition here */
-	echo = 0;
+	char *var = getenv(buf);
+	if (var && *var=='1')
+		echo = 1;
+	else echo = 0;
+}
+
+TAG_CALLBACK(cpp_ifdef)
+{
+	char *var = getenv(buf);
+	if (var) echo = 1;
+	else echo = 0;
+}
+
+TAG_CALLBACK(cpp_else)
+{
+	echo = echo?0:1;
+}
+
+TAG_CALLBACK(cpp_ifndef)
+{
+	cpp_ifdef(buf, out);
+	cpp_else(buf, out);
 }
 
 TAG_CALLBACK(cpp_define)
 {
 	char *eq = strchr(buf, ' ');
-	printf("DEFINE(%s)\n", buf);
 	if (eq) {
-		eq = '\0';
+		*eq = '\0';
 		setenv(buf, eq+1, 1);
 	} else setenv(buf, "", 1);
 }
@@ -37,13 +56,14 @@ TAG_CALLBACK(cpp_endif)
 
 TAG_CALLBACK(cpp_include)
 {
-	//printf("CPP-INCLUDE(%s)\n", buf);
-	spp_file(buf, out);
+	if (echo) spp_file(buf, out);
 }
 
 struct Tag cpp_tags[] = {
-	{ "if", cpp_if },
+	{ "ifdef", cpp_ifdef },
+	{ "ifndef", cpp_ifndef },
 	{ "endif", cpp_endif },
+	{ "if", cpp_if },
 	{ "include", cpp_include },
 	{ "define", cpp_define },
 	{ "error", cpp_error },
