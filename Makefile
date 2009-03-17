@@ -11,6 +11,9 @@ config.h:
 
 ${BIN}: config.h ${OBJ}
 	${CC} ${LDFLAGS} -o ${BIN} ${OBJ}
+	#ln -s ${BIN} cpp
+	#ln -s ${BIN} pod
+	#ln -s ${BIN} sh
 
 install:
 	${INSTALL_BIN} spp ${BINDIR}

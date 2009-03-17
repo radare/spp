@@ -72,7 +72,13 @@ void spp_eval(char *buf, FILE *out)
 	} else {
 		D printf("==> 3\n");
 		if (ptr) strcat(lbuf, ptr);
-		else strcat(lbuf, buf);
+		else {
+			if (lbuf == NULL) {
+				printf("syntax error?\n");
+				exit(1);
+			}
+			strcat(lbuf, buf);
+		}
 		//E fprintf(out, buf);
 	}
 }
