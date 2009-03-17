@@ -47,11 +47,8 @@ void spp_io(FILE *in, FILE *out);
 
 #include "config.h"
 
-static char *tag_pre = TAG_PRE;
-static char *tag_post = TAG_POST;
-static char *token = TOKEN;
-static int tag_begin = TAG_BEGIN;
-int echo = ECHO;
+char *tag_pre, *tag_post, *token;
+int tag_begin, echo;
 
 #if DEBUG
 #define D if (1)

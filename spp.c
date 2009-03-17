@@ -1,3 +1,4 @@
+/* Copyleft (r) pancake (at) nopcode (dot) org */
 #include "spp.h"
 
 char *lbuf = NULL;
@@ -29,18 +30,32 @@ void spp_run(char *buf, FILE *out)
 	}
 }
 
+void lbuf_strcat(char *dst, char *src)
+{
+	int len = strlen(src);
+	if ((len+lbuf_n) > lbuf_s)
+		lbuf = realloc(lbuf, lbuf_s<<1);
+	memcpy(lbuf+lbuf_n, src, len+1);
+	lbuf_n += len;
+}
+
 void spp_eval(char *buf, FILE *out)
 {
 	char *ptr, *ptr2;
 
-//D printf("-----------(%s)\n", buf);
+	if (tag_pre == NULL) {
+		fprintf(stderr, "No processor defined\n");
+		exit(1);
+	}
+
+	//D printf("-----------(%s)\n", buf);
 	/* (pre) tag */
 	ptr = strstr(buf, tag_pre);
 	if (ptr) {
 		D printf("==> 0.0 (%s)\n", ptr);
 		if (!tag_begin || (tag_begin && ptr == buf)) {
 			*ptr = '\0';
-			ptr = ptr + predelta; //strlen(tag_pre);
+			ptr = ptr + predelta;
 			D printf("==> 0 (%s) +%d\n", ptr, predelta);
 		}
 	}
@@ -52,8 +67,8 @@ void spp_eval(char *buf, FILE *out)
 		*ptr2 = '\0';
 		if (lbuf && lbuf[0]) {
 			D printf("==> 1 (%s)\n", lbuf);
-			if (ptr) strcat(lbuf, ptr);
-			else strcat(lbuf, buf);
+			if (ptr) lbuf_strcat(lbuf, ptr);
+			else lbuf_strcat(lbuf, buf);
 			spp_run(lbuf+delta+1, out);
 			lbuf[0]='\0';
 			lbuf_n = 0;
@@ -71,13 +86,14 @@ void spp_eval(char *buf, FILE *out)
 		E fprintf(out, ptr2+delta);
 	} else {
 		D printf("==> 3\n");
-		if (ptr) strcat(lbuf, ptr);
+		if (ptr) lbuf_strcat(lbuf, ptr);
 		else {
 			if (lbuf == NULL) {
+				// XXX should never happen
 				printf("syntax error?\n");
 				exit(1);
 			}
-			strcat(lbuf, buf);
+			lbuf_strcat(lbuf, buf);
 		}
 		//E fprintf(out, buf);
 	}
@@ -123,11 +139,9 @@ void spp_help(char *argv0)
 		"  -s [str]      show this string before anything\n"
 		"  -v            show version information\n");
 	if (proc) {
-		printf("Processor specific flags:\n");
-		printf("name: %s\n", proc->name);
-		for(i=0;args[i].flag;i++) {
+		printf("%s specific flags:\n", proc->name);
+		for(i=0;args[i].flag;i++)
 			printf(" %s   %s\n", args[i].flag, args[i].desc);
-		}
 	}
 	exit(0);
 }
@@ -135,34 +149,41 @@ void spp_help(char *argv0)
 void spp_proc_list()
 {
 	int i;
-	proc = NULL;
 	for(i=0;procs[i];i++)
 		printf("%s\n", procs[i]->name);
 }
 
-void spp_proc_set(char *arg, int fail)
+void spp_proc_set(struct Proc *p, char *arg, int fail)
 {
 	int j;
-	proc = NULL;
+	//proc = NULL;
+	if (arg)
 	for(j=0;procs[j];j++) {
 		if (!strcmp(procs[j]->name, arg)) {
 			proc = procs[j];
-			// TODO: wtf!
-			tag_pre = proc->tag_pre;
-			tag_post = proc->tag_post;
-			token = proc->token;
-			tag_begin = proc->tag_begin;
-			args = (struct Arg*)proc->args;
-			tags = (struct Tag*)proc->tags;
-			predelta = strlen(tag_pre);
-			delta = strlen(tag_post);
-			proc = proc;
-			return;
+			D printf("SET PROC:(%s)(%s)\n", arg, proc->name);
+			break;
 		}
 	}
-	if (fail) {
+	if (arg&&*arg&&!procs[j]&&fail) {
 		fprintf(stderr, "Invalid preprocessor name '%s'\n", arg);
 		exit(1);
+	}
+	if (proc == NULL)
+		proc = p;
+
+	if (proc != NULL) {
+		// TODO: wtf!
+		tag_pre = proc->tag_pre;
+		tag_post = proc->tag_post;
+		echo = proc->default_echo;
+		token = proc->token;
+		tag_begin = proc->tag_begin;
+		args = (struct Arg*)proc->args;
+		tags = (struct Tag*)proc->tags;
+		predelta = strlen(tag_pre);
+		delta = strlen(tag_post);
+		proc = proc;
 	}
 }
 
@@ -172,7 +193,7 @@ int main(int argc, char **argv)
 	FILE *out = stdout;
 	char *arg;
 
-	spp_proc_set(argv[0], 0);
+	spp_proc_set(proc, argv[0], 0);
 
 	if (argc<2)
 		spp_io (stdin, stdout);
@@ -202,7 +223,7 @@ int main(int argc, char **argv)
 			} else
 			if (!memcmp(argv[i],"-t", 2)) {
 				GET_ARG(arg, argv, i);
-				spp_proc_set(arg, 1);
+				spp_proc_set(proc, arg, 1);
 			} else
 			if (!strcmp(argv[i],"-v")) {
 				printf("spp-%s\n", VERSION);
@@ -224,7 +245,11 @@ int main(int argc, char **argv)
 				GET_ARG(arg, argv, i);
 				if (arg==NULL) arg = "";
 				spp_eval(arg, out);
-			} else spp_file(argv[i], stdout);
+			} else {
+				if (i == argc)
+					fprintf(stderr, "No file specified.\n");
+				else spp_file(argv[i], stdout);
+			}
 		}
 	}
 	return 0;
