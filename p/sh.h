@@ -2,6 +2,9 @@
 
 TAG_CALLBACK(sh_default)
 {
+	if (out != stdout) {
+		// pipe stdout to out fd
+	}
 	// printf("system(%s)\n", buf);
 	system(buf);
 }

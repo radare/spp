@@ -14,6 +14,13 @@ TAG_CALLBACK(cpp_error)
 	}
 }
 
+TAG_CALLBACK(cpp_warning)
+{
+	fprintf(out,"\n");
+	if (echo && buf != NULL)
+		fprintf(out, "WARNING: %s\n", buf);
+}
+
 TAG_CALLBACK(cpp_if)
 {
 	char *var = getenv(buf);
@@ -67,6 +74,7 @@ struct Tag cpp_tags[] = {
 	{ "include", cpp_include },
 	{ "define", cpp_define },
 	{ "error", cpp_error },
+	{ "warning", cpp_warning },
 	{ NULL, cpp_default },
 	{ NULL }
 };

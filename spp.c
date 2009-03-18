@@ -1,4 +1,5 @@
 /* Copyleft (r) pancake (at) nopcode (dot) org */
+
 #include "spp.h"
 
 char *lbuf = NULL;
@@ -67,9 +68,15 @@ void spp_eval(char *buf, FILE *out)
 		*ptr2 = '\0';
 		if (lbuf && lbuf[0]) {
 			D printf("==> 1 (%s)\n", lbuf);
-			if (ptr) lbuf_strcat(lbuf, ptr);
-			else lbuf_strcat(lbuf, buf);
-			spp_run(lbuf+delta+1, out);
+			if (ptr) {
+				lbuf_strcat(lbuf, buf);
+				E fprintf(out, lbuf);
+				spp_run(ptr, out);
+			} else {lbuf_strcat(lbuf, buf);
+				D printf("==>run(%s)\n", lbuf);
+				spp_run(lbuf+delta+1, out);
+			}
+			D printf("==>run(%s)\n", lbuf+delta+1);
 			lbuf[0]='\0';
 			lbuf_n = 0;
 		} else {

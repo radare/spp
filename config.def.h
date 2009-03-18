@@ -1,4 +1,5 @@
 #include "p/sh.h"
+#include "p/mc.h"
 #include "p/pod.h"
 #include "p/cpp.h"
 
@@ -6,6 +7,7 @@ struct Proc *procs[] = {
 	&cpp_proc,
 	&pod_proc,
 	&sh_proc,
+	&mc_proc,
 	NULL
 };
 
