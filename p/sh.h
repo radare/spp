@@ -22,6 +22,7 @@ struct Proc sh_proc = {
 	.name = "sh",
 	.tags = (struct Tag **)sh_tags,
 	.args = (struct Arg **)sh_args,
+	.eof = NULL,
 	.token = NULL,
 	.tag_pre = "{{",
 	.tag_post = "}}",

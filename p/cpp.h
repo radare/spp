@@ -106,6 +106,7 @@ struct Proc cpp_proc = {
 	.tags = (struct Tag **)cpp_tags,
 	.args = (struct Arg **)cpp_args,
 	.token = " ",
+	.eof = NULL,
 	.tag_pre = "#",
 	.tag_post = "\n",
 	.default_echo = 1,

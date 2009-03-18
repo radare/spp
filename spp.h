@@ -33,6 +33,7 @@ struct Proc {
 	const char *name;
 	struct Tag **tags;
 	struct Arg **args;
+	TAG_CALLBACK ((*eof));
 	char *tag_pre;
 	char *tag_post;
 	char *token;

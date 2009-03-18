@@ -41,6 +41,7 @@ struct Proc pod_proc = {
 	.tags = (struct Tag **)pod_tags,
 	.args = (struct Arg **)pod_args,
 	.token = " ",
+	.eof = NULL,
 	.tag_pre = "=",
 	.tag_post = "\n",
 	.default_echo = 0,

@@ -5,8 +5,6 @@
 char *lbuf = NULL;
 int lbuf_s = 1024;
 int lbuf_n = 0;
-int delta = 0;
-int predelta = 0;
 
 void spp_run(char *buf, FILE *out)
 {
@@ -21,10 +19,10 @@ void spp_run(char *buf, FILE *out)
 		} else tok = buf;
 	}
 
-	fflush(out);
 	for(i=0;tags[i].callback;i++) {
-		D printf("NAME=(%s)\n", tok);
+		D fprintf(stderr, "NAME=(%s)\n", tok);
 		if ((tags[i].name==NULL)||(!strcmp(buf, tags[i].name))) {
+			fflush(out);
 			tags[i].callback(tok, out);
 			break;
 		}
@@ -43,11 +41,28 @@ void lbuf_strcat(char *dst, char *src)
 void spp_eval(char *buf, FILE *out)
 {
 	char *ptr, *ptr2;
+	int delta;
 
+	/* per word */
 	if (tag_pre == NULL) {
-		fprintf(stderr, "No processor defined\n");
-		exit(1);
+		do {
+			ptr = strstr(buf, token);
+			if (ptr) *ptr='\0';
+			delta = strlen(buf)-1;
+			if (buf[delta]=='\n')
+				buf[delta]='\0';
+			if (*buf) spp_run(buf, out);
+			buf = ptr+1;
+		} while(ptr);
+		return;
 	}
+
+	if (tag_post == NULL) {
+		/* handle per line here ? */
+		return;
+	}
+
+	delta = strlen(tag_post);
 
 	//D printf("-----------(%s)\n", buf);
 	/* (pre) tag */
@@ -56,8 +71,8 @@ void spp_eval(char *buf, FILE *out)
 		D printf("==> 0.0 (%s)\n", ptr);
 		if (!tag_begin || (tag_begin && ptr == buf)) {
 			*ptr = '\0';
-			ptr = ptr + predelta;
-			D printf("==> 0 (%s) +%d\n", ptr, predelta);
+			ptr = ptr + strlen(tag_pre);;
+			D printf("==> 0 (%s)\n", ptr);
 		}
 	}
 
@@ -144,6 +159,8 @@ void spp_help(char *argv0)
 		"  -t [type]     define processor type (cpp)\n"
 		"  -e [str]      evaluate this string with the selected proc\n"
 		"  -s [str]      show this string before anything\n"
+		"  -l            list all built-in preprocessors\n"
+		"  -n            do not read from stdin\n"
 		"  -v            show version information\n");
 	if (proc) {
 		printf("%s specific flags:\n", proc->name);
@@ -188,9 +205,6 @@ void spp_proc_set(struct Proc *p, char *arg, int fail)
 		tag_begin = proc->tag_begin;
 		args = (struct Arg*)proc->args;
 		tags = (struct Tag*)proc->tags;
-		predelta = strlen(tag_pre);
-		delta = strlen(tag_post);
-		proc = proc;
 	}
 }
 
@@ -241,8 +255,12 @@ int main(int argc, char **argv)
 				/* show help */
 				spp_help(argv[0]);
 			} else
+			if (!strcmp(argv[i],"-n")) {
+				dostdin = 0;
+			} else
 			if (!strcmp(argv[i],"-l")) {
 				spp_proc_list();
+				exit(0);
 			} else
 			if (!strcmp(argv[i],"-s")) {
 				GET_ARG(arg, argv, i);
@@ -264,5 +282,9 @@ int main(int argc, char **argv)
 		}
 		if (dostdin) spp_io(stdin, out);
 	}
+
+	if (proc->eof)
+		proc->eof("", out);
+
 	return 0;
 }

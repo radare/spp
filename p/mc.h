@@ -87,6 +87,7 @@ struct Proc mc_proc = {
 	.tags = (struct Tag **)mc_tags,
 	.args = (struct Arg **)mc_args,
 	.token = " ",
+	.eof = NULL,
 	.tag_pre = "{{",
 	.tag_post = "}}",
 	.default_echo = 1,

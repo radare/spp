@@ -1,6 +1,0 @@
-SPP TODO
-========
-
-* Support multiple preprocessors in a shot
-  - depending on extension
-  - depending on argv[0]
