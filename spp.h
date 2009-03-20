@@ -38,6 +38,7 @@ struct Proc {
 	char *tag_post;
 	char *token;
 	char *multiline;
+	int chop;
 	int tag_begin;
 	int default_echo;
 };

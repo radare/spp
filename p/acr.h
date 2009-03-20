@@ -53,5 +53,6 @@ struct Proc acr_proc = {
 	.tag_post = NULL,
 	.multiline = NULL,
 	.default_echo = 1,
+	.chop = 0,
 	.tag_begin = 0,
 };

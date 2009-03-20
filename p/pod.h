@@ -46,5 +46,6 @@ struct Proc pod_proc = {
 	.tag_post = "\n",
 	.multiline = NULL,
 	.default_echo = 0,
+	.chop = 0,
 	.tag_begin = 1,
 };

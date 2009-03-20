@@ -45,5 +45,6 @@ struct Proc sh_proc = {
 	.tag_post = "}}",
 	.multiline = "\\",
 	.default_echo = 1,
+	.chop = 0,
 	.tag_begin = 0,
 };

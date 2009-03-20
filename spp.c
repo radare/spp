@@ -6,10 +6,17 @@ char *lbuf = NULL;
 int lbuf_s = 1024;
 int lbuf_n = 0;
 
+#define IS_SPACE(x) ((x==' ')||(x=='\t')||(x=='\r')||(x=='\n'))
+
 void spp_run(char *buf, FILE *out)
 {
 	int i;
-	char *tok = buf;
+	char *tok;
+
+	if (proc->chop) {
+		for(;IS_SPACE(*buf);buf=buf+1);
+		for(tok = buf+strlen(buf)-1; IS_SPACE(*tok);tok=tok-1)*tok='\0';
+	}
 
 	if (token) {
 		tok = strstr(buf, token);
@@ -17,7 +24,7 @@ void spp_run(char *buf, FILE *out)
 			*tok = '\0';
 			tok = tok + 1;
 		} else tok = buf;
-	}
+	} else tok = buf;
 
 	for(i=0;tags[i].callback;i++) {
 		D fprintf(stderr, "NAME=(%s)\n", tok);
@@ -85,14 +92,14 @@ void spp_eval(char *buf, FILE *out)
 			D printf("==> 1 (%s)\n", lbuf);
 			if (ptr) {
 				lbuf_strcat(lbuf, buf);
-				E fprintf(out, lbuf);
+				E fprintf(out, "%s", lbuf);
 				spp_run(ptr, out);
 			} else {
 				lbuf_strcat(lbuf, buf);
-				D printf("==>run(%s)\n", lbuf);
+				D printf("==> spp_run(%s)\n", lbuf);
 				spp_run(lbuf+delta+1, out);
 			}
-			D printf("==>run(%s)\n", lbuf+delta+1);
+			D printf("==>XXX spp_run(%s)\n", lbuf+delta+1);
 			lbuf[0]='\0';
 			lbuf_n = 0;
 		} else {
@@ -106,19 +113,28 @@ void spp_eval(char *buf, FILE *out)
 				spp_run(ptr, out);
 			}
 		}
-		E fprintf(out, ptr2+delta);
+		E fprintf(out, "%s", ptr2+delta);
 	} else {
 		D printf("==> 3\n");
-		if (ptr) lbuf_strcat(lbuf, ptr);
-		else {
+		if (ptr) {
+			lbuf_strcat(lbuf, ptr);
+		} else {
 			if (lbuf == NULL) {
 				// XXX should never happen
 				printf("syntax error?\n");
 				exit(1);
 			}
-			lbuf_strcat(lbuf, buf);
+//fprintf(stderr, "(((((((((((((((%s))))))))))))\n", lbuf);
+//fprintf(stderr, "(((((((((((((((%s))))))))))))\n", buf);
+//fprintf(stderr, "(((((((((((((((%s))))))))))))\n", lbuf);
+			if (buf[0]) {
+				lbuf_strcat(lbuf, buf);
+//fprintf(stderr, "(((%s)))\n", buf);
+				E fprintf(out, "%s", buf); // TO PRINT OR NOT TO PRINT
+			} else  {
+				E fprintf(out, "%s", buf);
+			}
 		}
-		//E fprintf(out, buf);
 	}
 }
 
@@ -137,7 +153,7 @@ void spp_io(FILE *in, FILE *out)
 		if (feof(in)) break;
 		spp_eval(buf, out);
 	}
-	E fprintf(out, lbuf);
+	E fprintf(out, "%s", lbuf);
 }
 
 int spp_file(const char *file, FILE *out)
@@ -161,6 +177,7 @@ void spp_help(char *argv0)
 		"  -e [str]      evaluate this string with the selected proc\n"
 		"  -s [str]      show this string before anything\n"
 		"  -l            list all built-in preprocessors\n"
+		"  -L            list keywords registered by the processor\n"
 		"  -n            do not read from stdin\n"
 		"  -v            show version information\n");
 	if (proc) {
@@ -169,6 +186,13 @@ void spp_help(char *argv0)
 			printf(" %s   %s\n", args[i].flag, args[i].desc);
 	}
 	exit(0);
+}
+
+void spp_proc_list_kw()
+{
+	int i;
+	for(i=0;tags[i].name;i++)
+		printf("%s\n", tags[i].name);
 }
 
 void spp_proc_list()
@@ -261,6 +285,10 @@ int main(int argc, char **argv)
 			} else
 			if (!strcmp(argv[i],"-l")) {
 				spp_proc_list();
+				exit(0);
+			} else
+			if (!strcmp(argv[i],"-L")) {
+				spp_proc_list_kw();
 				exit(0);
 			} else
 			if (!strcmp(argv[i],"-s")) {

@@ -112,5 +112,6 @@ struct Proc cpp_proc = {
 	.tag_post = "\n",
 	.multiline = "\\",
 	.default_echo = 1,
+	.chop = 0,
 	.tag_begin = 1,
 };
