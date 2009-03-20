@@ -3,6 +3,7 @@
 TAG_CALLBACK(mc_set)
 {
 	char *eq = strchr(buf, ' ');
+	if (!echo) return;
 	if (eq) {
 		*eq = '\0';
 		setenv(buf, eq+1, 1);
@@ -12,21 +13,25 @@ TAG_CALLBACK(mc_set)
 TAG_CALLBACK(mc_get)
 {
 	char *var = getenv(buf);
+	if (!echo) return;
 	if (var) fprintf(out, "%s", var);
 }
 
 TAG_CALLBACK(mc_add)
 {
+	char res[32];
 	char *eq = strchr(buf, ' ');
 	char *var;
 	int ret = 0;
+	if (!echo) return;
 	if (eq) {
 		*eq = '\0';
 		var = getenv(buf);
-		if (var == NULL) ret = 0;
-		else ret = atoi(var);
+		if (var != NULL)
+			ret = atoi(var);
 		ret += atoi(eq+1);
-		setenv(buf, eq+1, 1);
+		sprintf(res, "%d", ret);
+		setenv(buf, res, 1);
 	} else { /* syntax error */ }
 }
 
@@ -35,6 +40,7 @@ TAG_CALLBACK(mc_sub)
 	char *eq = strchr(buf, ' ');
 	char *var;
 	int ret = 0;
+	if (!echo) return;
 	if (eq) {
 		*eq = '\0';
 		var = getenv(buf);
@@ -45,9 +51,18 @@ TAG_CALLBACK(mc_sub)
 	} else { /* syntax error */ }
 }
 
+TAG_CALLBACK(mc_trace)
+{
+	char b[1024];
+	if (!echo) return;
+	snprintf(b, 1023, "echo \"%s\" > /dev/stderr", buf);
+	system(b);
+}
+
 TAG_CALLBACK(mc_echo)
 {
 	char b[1024];
+	if (!echo) return;
 	snprintf(b, 1023, "echo \"%s\"", buf);
 //printf("\n==> (%s)\n\n", b);
 //fflush(stdout);
@@ -56,6 +71,7 @@ TAG_CALLBACK(mc_echo)
 
 TAG_CALLBACK(mc_system)
 {
+	if (!echo) return;
 	if (out != stdout) {
 		// pipe stdout to out fd
 	}
@@ -65,17 +81,14 @@ TAG_CALLBACK(mc_system)
 
 TAG_CALLBACK(mc_include)
 {
-	if (echo) {
-		fprintf(stderr, "INCLUDE(%s)\n", buf);
-		spp_file(buf, out);
-	} else {
-		printf("INCLUDE IGNORED\n");
-	}
+	if (!echo) return;
+	spp_file(buf, out);
 }
 
 TAG_CALLBACK(mc_if)
 {
 	char *var = getenv(buf);
+	if (!echo) return;
 	if (var && *var!='0' && *var != '\0')
 		echo = 1;
 	else echo = 0;
@@ -84,15 +97,25 @@ TAG_CALLBACK(mc_if)
 /* {{ ifeq $path / }} */
 TAG_CALLBACK(mc_ifeq)
 {
+	char *value = buf;
 	char *eq = strchr(buf, ' ');
+	if (!echo) return;
 	if (eq) {
-		char *value = buf;
 		*eq = '\0';
 		value = getenv(value);
 		if (value && !strcmp(value, eq+1)) {
 			echo = 1;
 		} else echo = 0;
-	} else echo = 1;
+	} else {
+		echo = 1;
+		value = getenv(buf);
+//fprintf(stderr, "IFEQ CHECK HERE (%s)\n", value);
+		if (value==NULL || *value=='\0')
+			echo = 1;
+		else echo = 0;
+//fprintf(stderr, "RESULT=%d\n", echo);
+/* SYNTAX ERRORR */
+	}
 }
 
 TAG_CALLBACK(mc_else)
@@ -102,13 +125,16 @@ TAG_CALLBACK(mc_else)
 
 TAG_CALLBACK(mc_ifnot)
 {
+	if (!echo) return;
 	mc_if(buf, out);
 	mc_else(buf, out);
 }
 
 TAG_CALLBACK(mc_ifin)
 {
-	char *var, *ptr = strchr(buf, ' ');
+	char *var, *ptr;
+	if (!echo) return;
+	ptr = strchr(buf, ' ');
 	echo = 0;
 	if (ptr) {
 		*ptr='\0';
@@ -126,6 +152,7 @@ TAG_CALLBACK(mc_endif)
 
 TAG_CALLBACK(mc_default)
 {
+	if (!echo) return;
 	fprintf(out, "\n** invalid command(%s)", buf);
 }
 
@@ -135,6 +162,7 @@ struct Tag mc_tags[] = {
 	{ "add", mc_add },
 	{ "sub", mc_sub },
 	{ "echo", mc_echo },
+	{ "trace", mc_trace },
 	{ "ifin", mc_ifin },
 	{ "ifnot", mc_ifnot },
 	{ "ifeq", mc_ifeq },

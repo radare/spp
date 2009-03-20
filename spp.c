@@ -13,6 +13,7 @@ void spp_run(char *buf, FILE *out)
 	int i;
 	char *tok;
 
+D fprintf(stderr, "SPP_RUN(%s)\n", buf);
 	if (proc->chop) {
 		for(;IS_SPACE(*buf);buf=buf+1);
 		for(tok = buf+strlen(buf)-1; IS_SPACE(*tok);tok=tok-1)*tok='\0';
@@ -45,6 +46,7 @@ void lbuf_strcat(char *dst, char *src)
 	lbuf_n += len;
 }
 
+int inside_command = 0;
 void spp_eval(char *buf, FILE *out)
 {
 	char *ptr, *ptr2;
@@ -76,17 +78,25 @@ void spp_eval(char *buf, FILE *out)
 	ptr = strstr(buf, tag_pre);
 	if (ptr) {
 		D printf("==> 0.0 (%s)\n", ptr);
+inside_command = 1;
 		if (!tag_begin || (tag_begin && ptr == buf)) {
 			*ptr = '\0';
 			ptr = ptr + strlen(tag_pre);;
+			E fprintf(out, "%s", buf);
 			D printf("==> 0 (%s)\n", ptr);
 		}
 	}
 
 	/* (post) tag */
+	//if (ptr) ptr2 = strstr(ptr, tag_post);
+	//else ptr2 = strstr(buf, tag_post);
 	if (ptr) ptr2 = strstr(ptr, tag_post);
-	else ptr2 = strstr(buf, tag_post);
+	else {
+		E fprintf(out, "%s", buf);
+		return;
+	}
 	if (ptr2) {
+inside_command = 0;
 		*ptr2 = '\0';
 		if (lbuf && lbuf[0]) {
 			D printf("==> 1 (%s)\n", lbuf);
@@ -96,8 +106,9 @@ void spp_eval(char *buf, FILE *out)
 				spp_run(ptr, out);
 			} else {
 				lbuf_strcat(lbuf, buf);
-				D printf("==> spp_run(%s)\n", lbuf);
-				spp_run(lbuf+delta+1, out);
+				D printf("=(1)=> spp_run(%s)\n", lbuf);
+				spp_run(lbuf+delta, out);
+				//spp_run(lbuf+delta+1, out);
 			}
 			D printf("==>XXX spp_run(%s)\n", lbuf+delta+1);
 			lbuf[0]='\0';
@@ -105,7 +116,7 @@ void spp_eval(char *buf, FILE *out)
 		} else {
 			D printf("==> 2 (%s)\n", ptr);
 			E {
-				fprintf(out, "%s", buf);
+			//	fprintf(out, "%s", buf);
 				if (!ptr) fprintf(out, "\n");
 			}
 			if (ptr) {
@@ -128,9 +139,15 @@ void spp_eval(char *buf, FILE *out)
 //fprintf(stderr, "(((((((((((((((%s))))))))))))\n", buf);
 //fprintf(stderr, "(((((((((((((((%s))))))))))))\n", lbuf);
 			if (buf[0]) {
-				lbuf_strcat(lbuf, buf);
 //fprintf(stderr, "(((%s)))\n", buf);
+//if (lbuf[0])
+if (inside_command) {
+
+				lbuf_strcat(lbuf, buf);
+} else {
+
 				E fprintf(out, "%s", buf); // TO PRINT OR NOT TO PRINT
+}
 			} else  {
 				E fprintf(out, "%s", buf);
 			}

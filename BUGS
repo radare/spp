@@ -1,0 +1,5 @@
+Known bugs and missfeatures
+===========================
+
+* nested conditionals not implemented
+* nested tags not implemented
