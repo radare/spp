@@ -135,19 +135,12 @@ inside_command = 0;
 				printf("syntax error?\n");
 				exit(1);
 			}
-//fprintf(stderr, "(((((((((((((((%s))))))))))))\n", lbuf);
-//fprintf(stderr, "(((((((((((((((%s))))))))))))\n", buf);
-//fprintf(stderr, "(((((((((((((((%s))))))))))))\n", lbuf);
 			if (buf[0]) {
-//fprintf(stderr, "(((%s)))\n", buf);
-//if (lbuf[0])
-if (inside_command) {
-
-				lbuf_strcat(lbuf, buf);
-} else {
-
-				E fprintf(out, "%s", buf); // TO PRINT OR NOT TO PRINT
-}
+				if (inside_command) {
+					lbuf_strcat(lbuf, buf);
+				} else {
+					E fprintf(out, "%s", buf);
+				}
 			} else  {
 				E fprintf(out, "%s", buf);
 			}
