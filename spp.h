@@ -37,6 +37,7 @@ struct Proc {
 	char *tag_pre;
 	char *tag_post;
 	char *token;
+	char *multiline;
 	int tag_begin;
 	int default_echo;
 };

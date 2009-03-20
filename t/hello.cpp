@@ -6,6 +6,10 @@ This is a hello cpp world
 This text is visible
 #endif
 
+#if !visible
+This text is not visible
+#endif
+
 #ifdef SECRET
 
                 UG

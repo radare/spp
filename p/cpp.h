@@ -23,10 +23,11 @@ TAG_CALLBACK(cpp_warning)
 
 TAG_CALLBACK(cpp_if)
 {
-	char *var = getenv(buf);
+	char *var = getenv(buf+((*buf=='!')?1:0));
 	if (var && *var=='1')
 		echo = 1;
 	else echo = 0;
+	if (*buf=='!') echo = !!!echo;
 }
 
 TAG_CALLBACK(cpp_ifdef)
@@ -109,6 +110,7 @@ struct Proc cpp_proc = {
 	.eof = NULL,
 	.tag_pre = "#",
 	.tag_post = "\n",
+	.multiline = "\\",
 	.default_echo = 1,
 	.tag_begin = 1,
 };

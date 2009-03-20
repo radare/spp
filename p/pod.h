@@ -44,6 +44,7 @@ struct Proc pod_proc = {
 	.eof = NULL,
 	.tag_pre = "=",
 	.tag_post = "\n",
+	.multiline = NULL,
 	.default_echo = 0,
 	.tag_begin = 1,
 };

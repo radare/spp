@@ -90,6 +90,7 @@ struct Proc mc_proc = {
 	.eof = NULL,
 	.tag_pre = "{{",
 	.tag_post = "}}",
+	.multiline = NULL,
 	.default_echo = 1,
 	.tag_begin = 0,
 };

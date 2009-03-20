@@ -87,7 +87,8 @@ void spp_eval(char *buf, FILE *out)
 				lbuf_strcat(lbuf, buf);
 				E fprintf(out, lbuf);
 				spp_run(ptr, out);
-			} else {lbuf_strcat(lbuf, buf);
+			} else {
+				lbuf_strcat(lbuf, buf);
 				D printf("==>run(%s)\n", lbuf);
 				spp_run(lbuf+delta+1, out);
 			}
