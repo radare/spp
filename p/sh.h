@@ -26,7 +26,35 @@ TAG_CALLBACK(sh_default)
 	system(buf);
 }
 
+static int sh_pipe_enabled = 0;
+static char *sh_pipe_cmd = NULL;
+
+TAG_CALLBACK(sh_pipe)
+{
+	sh_pipe_enabled = 1;
+	free (sh_pipe_cmd);
+	sh_pipe_cmd = strdup (buf);
+}
+
+TAG_CALLBACK(sh_endpipe)
+{
+	sh_pipe_enabled = 0;
+	free (sh_pipe_cmd);
+	sh_pipe_cmd = NULL;
+}
+
+PUT_CALLBACK(sh_fputs)
+{
+	if (sh_pipe_enabled) {
+		char str[1024]; // XXX
+		sprintf(str, "echo \"%s\" | %s", buf, sh_pipe_cmd); // XXX
+		system(str);
+	} else fprintf(out, "%s", buf);
+}
+
 struct Tag sh_tags[] = {
+	{ "pipe", sh_pipe },
+	{ "endpipe", sh_endpipe },
 	{ NULL, sh_default },
 	{ NULL }
 };
@@ -39,10 +67,12 @@ struct Proc sh_proc = {
 	.name = "sh",
 	.tags = (struct Tag **)sh_tags,
 	.args = (struct Arg **)sh_args,
+	.fputs = NULL,
 	.eof = NULL,
 	.token = NULL,
 	.tag_pre = "{{",
 	.tag_post = "}}",
+	.fputs = sh_fputs,
 	.multiline = "\\",
 	.default_echo = 1,
 	.chop = 0,

@@ -156,6 +156,33 @@ TAG_CALLBACK(mc_default)
 	fprintf(out, "\n** invalid command(%s)", buf);
 }
 
+
+static int mc_pipe_enabled = 0;
+static char *mc_pipe_cmd = NULL;
+
+TAG_CALLBACK(mc_pipe)
+{
+	mc_pipe_enabled = 1;
+	free (mc_pipe_cmd);
+	mc_pipe_cmd = strdup (buf);
+}
+
+TAG_CALLBACK(mc_endpipe)
+{
+	mc_pipe_enabled = 0;
+	free (mc_pipe_cmd);
+	mc_pipe_cmd = NULL;
+}
+
+PUT_CALLBACK(mc_fputs)
+{
+	if (mc_pipe_enabled) {
+		char str[1024]; // XXX
+		sprintf(str, "echo \"%s\" | %s", buf, mc_pipe_cmd); // XXX
+		system(str);
+	} else fprintf(out, "%s", buf);
+}
+
 struct Tag mc_tags[] = {
 	{ "get", mc_get },
 	{ "set", mc_set },
@@ -169,6 +196,8 @@ struct Tag mc_tags[] = {
 	{ "if", mc_if },
 	{ "else", mc_else },
 	{ "endif", mc_endif },
+	{ "pipe", mc_pipe },
+	{ "endpipe", mc_endpipe },
 	{ "include", mc_include },
 	{ "system", mc_system },
 	{ NULL, mc_default },
@@ -188,6 +217,7 @@ struct Proc mc_proc = {
 	.tag_pre = "{{",
 	.tag_post = "}}",
 	.chop = 1,
+	.fputs = mc_fputs,
 	.multiline = NULL,
 	.default_echo = 1,
 	.tag_begin = 0,

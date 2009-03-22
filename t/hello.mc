@@ -1,5 +1,5 @@
-{{ set arch x86-32 }}
    ---
+{{ set arch x86-32 }}
 
 hello {{echo world}}
 path={{echo $PATH}}
@@ -9,4 +9,8 @@ arch = {{ get arch }}
 FOO IS ENABLED
 {{ endif }}
 
+{{ pipe perl -ne 's/World/Stupid/g;print;' }}
+Hello World
+{{ endpipe }}
    ---
+

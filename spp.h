@@ -12,6 +12,7 @@ struct Arg *args = (struct Arg *)&x##_args; \
 struct Proc *proc = &x##_proc;
 
 #define TAG_CALLBACK(x) void x (char *buf, FILE *out)
+#define PUT_CALLBACK(x) void x (FILE *out, char *buf)
 
 struct Tag {
 	const char *name;
@@ -34,6 +35,7 @@ struct Proc {
 	struct Tag **tags;
 	struct Arg **args;
 	TAG_CALLBACK ((*eof));
+	PUT_CALLBACK ((*fputs));
 	char *tag_pre;
 	char *tag_post;
 	char *token;
