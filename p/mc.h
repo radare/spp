@@ -1,7 +1,4 @@
-/* Mini MCMS */
-
-static int iflevel = 0;
-static int ifvalue[10] = {0};
+/* Mini MCMS :: renamed to 'spp'? */
 
 /* Should be dynamic buffer */
 static int cmd_to_str(const char *cmd, char *out, int len)
@@ -24,18 +21,20 @@ static int cmd_to_str(const char *cmd, char *out, int len)
 TAG_CALLBACK(mc_set)
 {
 	char *eq = strchr(buf, ' ');
-	if (!echo) return;
+	if (!echo) return 0;
 	if (eq) {
 		*eq = '\0';
 		setenv(buf, eq+1, 1);
 	} else setenv(buf, "", 1);
+	return 0;
 }
 
 TAG_CALLBACK(mc_get)
 {
 	char *var = getenv(buf);
-	if (!echo) return;
+	if (!echo) return 0;
 	if (var) fprintf(out, "%s", var);
+	return 0;
 }
 
 TAG_CALLBACK(mc_add)
@@ -44,7 +43,7 @@ TAG_CALLBACK(mc_add)
 	char *eq = strchr(buf, ' ');
 	char *var;
 	int ret = 0;
-	if (!echo) return;
+	if (!echo) return 0;
 	if (eq) {
 		*eq = '\0';
 		var = getenv(buf);
@@ -54,6 +53,7 @@ TAG_CALLBACK(mc_add)
 		sprintf(res, "%d", ret);
 		setenv(buf, res, 1);
 	} else { /* syntax error */ }
+	return 0;
 }
 
 TAG_CALLBACK(mc_sub)
@@ -61,7 +61,7 @@ TAG_CALLBACK(mc_sub)
 	char *eq = strchr(buf, ' ');
 	char *var;
 	int ret = 0;
-	if (!echo) return;
+	if (!echo) return 0;
 	if (eq) {
 		*eq = '\0';
 		var = getenv(buf);
@@ -70,56 +70,50 @@ TAG_CALLBACK(mc_sub)
 		ret -= atoi(eq+1);
 		setenv(buf, eq+1, 1);
 	} else { /* syntax error */ }
+	return 0;
 }
 
+// XXX This method needs some love
 TAG_CALLBACK(mc_trace)
 {
 	char b[1024];
-	if (!echo) return;
-	snprintf(b, 1023, "echo \"%s\" > /dev/stderr", buf);
+	if (!echo) return 0;
+	snprintf(b, 1023, "echo '%s' > /dev/stderr", buf);
 	system(b);
+	return 0;
 }
 
 TAG_CALLBACK(mc_echo)
 {
-	if (!echo) return;
+	if (!echo) return 0;
 	fprintf(out, "%s", buf);
 	// TODO: add variable replacement here?? not necessary, done by {{get}}
+	return 0;
 }
 
 TAG_CALLBACK(mc_system)
 {
 	char outbuf[1024];
-	if (!echo) return;
+	if (!echo) return 0;
 	cmd_to_str(buf, outbuf, 1023);
 	fprintf(out, "%s", outbuf);
+	return 0;
 }
 
 TAG_CALLBACK(mc_include)
 {
-	if (!echo) return;
+	if (!echo) return 0;
 	spp_file(buf, out);
+	return 0;
 }
 
 TAG_CALLBACK(mc_if)
 {
 	char *var = getenv(buf);
-
-//fprintf(stderr, "IF (%s) ifvalue[%d]=%d \n", buf, iflevel, echo);
-	if (iflevel>0 && ifvalue[iflevel]==0) {
-		ifvalue[iflevel] = 0;
-		iflevel++;
-		return;
-	}
-
-	ifvalue[iflevel] = echo;
 	if (var && *var!='0' && *var != '\0')
 		echo = 1;
 	else echo = 0;
-	//fprintf(stderr, "IFNESTED (%s)\n", buf);
-	//if (!echo) return;
-	iflevel++;
-	ifvalue[iflevel] = echo;
+	return 1;
 }
 
 /* {{ ifeq $path / }} */
@@ -127,7 +121,6 @@ TAG_CALLBACK(mc_ifeq)
 {
 	char *value = buf;
 	char *eq = strchr(buf, ' ');
-	if (!echo) return;
 	if (eq) {
 		*eq = '\0';
 		value = getenv(value);
@@ -143,24 +136,26 @@ TAG_CALLBACK(mc_ifeq)
 		else echo = 0;
 //fprintf(stderr, "RESULT=%d\n", echo);
 	}
-	iflevel++;
+	return 1;
 }
 
 TAG_CALLBACK(mc_else)
 {
 	echo = echo?0:1;
+	return 0;
 }
 
 TAG_CALLBACK(mc_ifnot)
 {
 	mc_if(buf, out);
 	mc_else(buf, out);
+	return 1;
 }
 
 TAG_CALLBACK(mc_ifin)
 {
 	char *var, *ptr;
-	if (!echo) return;
+	if (!echo) return 1;
 	ptr = strchr(buf, ' ');
 	echo = 0;
 	if (ptr) {
@@ -170,23 +165,19 @@ TAG_CALLBACK(mc_ifin)
 			echo = 1;
 		}
 	}
-	iflevel++;
+	return 1;
 }
 
 TAG_CALLBACK(mc_endif)
 {
-	iflevel--;
-	//fprintf(stderr, "ENDIF (level=%d) (==%d)\n",
-	//iflevel , ifvalue[iflevel]);
-	if (iflevel==0) {
-		echo = 1;
-	} else echo = ifvalue[iflevel];
+	return -1;
 }
 
 TAG_CALLBACK(mc_default)
 {
-	if (!echo) return;
+	if (!echo) return 0;
 	fprintf(out, "\n** invalid command(%s)", buf);
+	return 0;
 }
 
 
@@ -198,6 +189,7 @@ TAG_CALLBACK(mc_pipe)
 	mc_pipe_enabled = 1;
 	free (mc_pipe_cmd);
 	mc_pipe_cmd = strdup (buf);
+	return 0;
 }
 
 TAG_CALLBACK(mc_endpipe)
@@ -205,6 +197,7 @@ TAG_CALLBACK(mc_endpipe)
 	mc_pipe_enabled = 0;
 	free (mc_pipe_cmd);
 	mc_pipe_cmd = NULL;
+	return 0;
 }
 
 PUT_CALLBACK(mc_fputs)
@@ -214,6 +207,7 @@ PUT_CALLBACK(mc_fputs)
 		sprintf(str, "echo '%s' | %s", buf, mc_pipe_cmd); // XXX
 		system(str);
 	} else fprintf(out, "%s", buf);
+	return 0;
 }
 
 struct Tag mc_tags[] = {
@@ -239,11 +233,13 @@ struct Tag mc_tags[] = {
 
 ARG_CALLBACK(mc_arg_d)
 {
+	// TODO: Handle error
 	char *eq = strchr(arg, '=');
 	if (eq) {
 		*eq = '\0';
 		setenv(arg, eq+1, 1);
 	} else setenv(arg, "", 1);
+	return 0;
 }
 
 struct Arg mc_args[] = {

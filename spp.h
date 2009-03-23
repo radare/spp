@@ -7,20 +7,23 @@
 
 extern int echo;
 
+#define GET_ARG(x,y,i) if (y[i][2]) x = y[i]+2; else x = y[++i]
+
 #define DEFAULT_PROC(x) \
 struct Tag *tags = (struct Tag *)&x##_tags; \
 struct Arg *args = (struct Arg *)&x##_args; \
 struct Proc *proc = &x##_proc;
 
-#define TAG_CALLBACK(x) void x (char *buf, FILE *out)
-#define PUT_CALLBACK(x) void x (FILE *out, char *buf)
+#define ARG_CALLBACK(x) int x (char *arg)
+/* XXX swap arguments ?? */
+#define TAG_CALLBACK(x) int x (char *buf, FILE *out)
+#define PUT_CALLBACK(x) int x (FILE *out, char *buf)
+#define IS_SPACE(x) ((x==' ')||(x=='\t')||(x=='\r')||(x=='\n'))
 
 struct Tag {
 	const char *name;
 	TAG_CALLBACK((*callback));
 };
-
-#define ARG_CALLBACK(x) void x (char *arg)
 
 struct Arg {
 	const char *flag;
@@ -28,8 +31,6 @@ struct Arg {
 	int has_arg;
 	ARG_CALLBACK((*callback));
 };
-
-#define GET_ARG(x,y,i) if (y[i][2]) x = y[i]+2; else x = y[++i]
 
 struct Proc {
 	const char *name;
@@ -61,5 +62,3 @@ int tag_begin, echo;
 #else
 #define D if (0)
 #endif
-
-#define E if (echo)

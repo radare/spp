@@ -3,13 +3,14 @@
 TAG_CALLBACK(pod_default)
 {
 	fprintf(out, "DEFAULT: (%s)\n", buf);
+	return 0;
 }
 
 TAG_CALLBACK(pod_cut)
 {
 	fprintf(out, "\n");
 	echo = 0;
-	//fprintf(out, "DEFAULT: (%s)\n", buf);
+	return 0;
 }
 
 TAG_CALLBACK(pod_head1)
@@ -18,11 +19,12 @@ TAG_CALLBACK(pod_head1)
 	echo = 1;
 	fprintf(out,"\n");
 	if (buf==NULL)
-		return;
+		return 0;
 	fprintf(out, "%s\n", buf);
 	for(i=0;i<len;i++)
 		fprintf(out, "%c", '=');
 	fprintf(out, "\n");
+	return 0;
 }
 
 struct Tag pod_tags[] = {

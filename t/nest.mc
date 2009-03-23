@@ -18,13 +18,13 @@ Hello {{echo world {{echo :D}} ==}}-->
   {{if no}}
     2 BUG: INVISIBLE TEXT
     {{if no}}
-      fuck
+      BUG fuck
       {{if yes}}
-        TRAP
+        BUG TRAP
       {{endif}}
-      fuck
+      BUG fuck
     {{endif}}
-  no one loves me
+  BUG: no one loves me
   {{endif}}
   {{if yes}}
   HELLO WORLD
@@ -40,7 +40,7 @@ VISIBLE TEXT
 
 {{if no}}
   {{if yes}}
-    THIS IS A TRAP
+    BUG: THIS IS A TRAP
   {{endif}}
-  NO DONT DO IT
+  BUG: NO DONT DO IT
 {{endif}}

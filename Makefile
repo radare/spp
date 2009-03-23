@@ -15,10 +15,14 @@ ${BIN}: config.h ${OBJ}
 	${CC} ${LDFLAGS} -o ${BIN} ${OBJ}
 
 symlinks:
-	#ln -s ${BIN} acr
-	#ln -s ${BIN} cpp
-	#ln -s ${BIN} pod
-	#ln -s ${BIN} sh
+	ln -s ${BIN} acr
+	ln -s ${BIN} cpp
+	ln -s ${BIN} pod
+	ln -s ${BIN} mc
+	ln -s ${BIN} sh
+
+test:
+	./spp -tmc t/nest.mc | grep BUG
 
 install:
 	${INSTALL_BIN} spp ${BINDIR}

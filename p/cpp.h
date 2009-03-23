@@ -3,6 +3,7 @@
 TAG_CALLBACK(cpp_default)
 {
 	fprintf(out, "DEFAULT: (%s)\n", buf);
+	return 0;
 }
 
 TAG_CALLBACK(cpp_error)
@@ -12,6 +13,7 @@ TAG_CALLBACK(cpp_error)
 		fprintf(out, "ERROR: %s\n", buf);
 		exit(1);
 	}
+	return 0;
 }
 
 TAG_CALLBACK(cpp_warning)
@@ -19,6 +21,7 @@ TAG_CALLBACK(cpp_warning)
 	fprintf(out,"\n");
 	if (echo && buf != NULL)
 		fprintf(out, "WARNING: %s\n", buf);
+	return 0;
 }
 
 TAG_CALLBACK(cpp_if)
@@ -28,6 +31,7 @@ TAG_CALLBACK(cpp_if)
 		echo = 1;
 	else echo = 0;
 	if (*buf=='!') echo = !!!echo;
+	return 1;
 }
 
 TAG_CALLBACK(cpp_ifdef)
@@ -35,17 +39,20 @@ TAG_CALLBACK(cpp_ifdef)
 	char *var = getenv(buf);
 	if (var) echo = 1;
 	else echo = 0;
+	return 1;
 }
 
 TAG_CALLBACK(cpp_else)
 {
 	echo = echo?0:1;
+	return 0;
 }
 
 TAG_CALLBACK(cpp_ifndef)
 {
 	cpp_ifdef(buf, out);
 	cpp_else(buf, out);
+	return 1;
 }
 
 TAG_CALLBACK(cpp_define)
@@ -55,16 +62,19 @@ TAG_CALLBACK(cpp_define)
 		*eq = '\0';
 		setenv(buf, eq+1, 1);
 	} else setenv(buf, "", 1);
+	return 0;
 }
 
 TAG_CALLBACK(cpp_endif)
 {
 	echo = 1;
+	return -1;
 }
 
 TAG_CALLBACK(cpp_include)
 {
 	if (echo) spp_file(buf, out);
+	return 0;
 }
 
 struct Tag cpp_tags[] = {
@@ -85,15 +95,18 @@ struct Tag cpp_tags[] = {
 ARG_CALLBACK(cpp_arg_i)
 {
 	printf("INCLUDEDIR(%s)\n", arg);
+	return 0;
 }
 
 ARG_CALLBACK(cpp_arg_d)
 {
+	// TODO: handle setenv==-1
 	char *eq = strchr(arg, '=');
 	if (eq) {
 		*eq = '\0';
 		setenv(arg, eq+1, 1);
 	} else setenv(arg, "", 1);
+	return 0;
 }
 
 struct Arg cpp_args[] = {

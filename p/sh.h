@@ -1,5 +1,7 @@
 /* SH */
 
+// TODO: use popen for {{pipe/endpipe}}
+
 #if 0
 static char *eof = NULL;
 static char *input = NULL;
@@ -24,6 +26,7 @@ TAG_CALLBACK(sh_default)
 	if (eof)	
 #endif
 	system(buf);
+	return 0;
 }
 
 static int sh_pipe_enabled = 0;
@@ -34,6 +37,7 @@ TAG_CALLBACK(sh_pipe)
 	sh_pipe_enabled = 1;
 	free (sh_pipe_cmd);
 	sh_pipe_cmd = strdup (buf);
+	return 0;
 }
 
 TAG_CALLBACK(sh_endpipe)
@@ -41,6 +45,7 @@ TAG_CALLBACK(sh_endpipe)
 	sh_pipe_enabled = 0;
 	free (sh_pipe_cmd);
 	sh_pipe_cmd = NULL;
+	return 0;
 }
 
 PUT_CALLBACK(sh_fputs)
@@ -50,6 +55,7 @@ PUT_CALLBACK(sh_fputs)
 		sprintf(str, "echo '%s' | %s", buf, sh_pipe_cmd); // XXX
 		system(str);
 	} else fprintf(out, "%s", buf);
+	return 0;
 }
 
 struct Tag sh_tags[] = {

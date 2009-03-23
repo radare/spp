@@ -19,7 +19,7 @@ TAG_CALLBACK(acr_default)
 	//printf("acr keyword(%s)\n", buf);
 
 	if (slurp_args(buf))
-		return;
+		return 0;
 
 	if (!strcmp(buf, "PKGNAME")) {
 		slurp_ptr = &pkgname;
@@ -27,11 +27,13 @@ TAG_CALLBACK(acr_default)
 	if (!strcmp(buf, "VERSION")) {
 		slurp_ptr = &version;
 	}
+	return 0;
 }
 
 TAG_CALLBACK(acr_eof)
 {
 	printf("Report:\n pkgname: %s\n version: %s\n", pkgname, version);
+	return 0;
 }
 
 struct Tag acr_tags[] = {

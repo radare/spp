@@ -5,15 +5,17 @@
 char *lbuf = NULL;
 int lbuf_s = 1024;
 int lbuf_n = 0;
-
-#define IS_SPACE(x) ((x==' ')||(x=='\t')||(x=='\r')||(x=='\n'))
+int incmd = 0; /* too long varname */
+/* nested conditional stuff */
+static int ifl = 0;
+static int ifv[10] = {1};
 
 void spp_run(char *buf, FILE *out)
 {
-	int i;
+	int i, ret;
 	char *tok;
 
-D fprintf(stderr, "SPP_RUN(%s)\n", buf);
+	D fprintf(stderr, "SPP_RUN(%s)\n", buf);
 	if (proc->chop) {
 		for(;IS_SPACE(*buf);buf=buf+1);
 		for(tok = buf+strlen(buf)-1; IS_SPACE(*tok);tok=tok-1)*tok='\0';
@@ -31,12 +33,25 @@ D fprintf(stderr, "SPP_RUN(%s)\n", buf);
 		D fprintf(stderr, "NAME=(%s)\n", tok);
 		if ((tags[i].name==NULL)||(!strcmp(buf, tags[i].name))) {
 			fflush(out);
-			tags[i].callback(tok, out);
+			ret = tags[i].callback(tok, out);
+			if (ret) {
+				ifl += ret;
+				if (ifl<0||ifl>127) {
+					fprintf(stderr, "Nested conditionals parsing error.\n");
+					exit(1);
+				}
+				if (ret>0) {
+					if (ifl>0&&ifv[ifl-1]==0)
+						echo = ifv[ifl] = 0;
+					else ifv[ifl] = echo;
+				} else echo = ifv[ifl];
+			}
 			break;
 		}
 	}
 }
 
+/* XXX : Do not dump to temporally files!! */
 char *spp_run_str(char *buf)
 {
 	char b[1024];
@@ -63,14 +78,11 @@ void lbuf_strcat(char *dst, char *src)
 
 void spp_fputs(FILE *out, char *str)
 {
-	E {
-		if (proc->fputs)
-			proc->fputs(out, str);
-		else fprintf(out, "%s", str);
-	}
+	if (!echo) return;
+	if (proc->fputs)
+		proc->fputs(out, str);
+	else fprintf(out, "%s", str);
 }
-
-int inside_command = 0;
 
 void spp_eval(char *buf, FILE *out)
 {
@@ -100,12 +112,11 @@ retry:
 
 	delta = strlen(tag_post);
 
-	//D printf("-----------(%s)\n", buf);
 	/* (pre) tag */
 	ptr = strstr(buf, tag_pre);
 	if (ptr) {
 		D printf("==> 0.0 (%s)\n", ptr);
-inside_command = 1;
+		incmd = 1;
 		if (!tag_begin || (tag_begin && ptr == buf)) {
 			*ptr = '\0';
 			ptr = ptr + strlen(tag_pre);;
@@ -116,8 +127,6 @@ inside_command = 1;
 	}
 
 	/* (post) tag */
-	//if (ptr) ptr2 = strstr(ptr, tag_post);
-	//else ptr2 = strstr(buf, tag_post);
 	if (ptr) ptr2 = strstr(ptr, tag_post);
 	else {
 		spp_fputs(out, buf);
@@ -145,7 +154,7 @@ inside_command = 1;
 			goto retry;
 		}
 	}
-inside_command = 0;
+	incmd = 0;
 		if (lbuf && lbuf[0]) {
 			D printf("==> 1 (%s)\n", lbuf);
 			if (ptr) {
@@ -180,9 +189,8 @@ inside_command = 0;
 				exit(1);
 			}
 			if (buf[0]) {
-				if (inside_command) {
-					lbuf_strcat(lbuf, buf);
-				} else spp_fputs(out, buf);
+				if (incmd) lbuf_strcat(lbuf, buf);
+				else spp_fputs(out, buf);
 			} else spp_fputs(out, buf);
 		}
 	}
