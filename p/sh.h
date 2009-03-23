@@ -47,7 +47,7 @@ PUT_CALLBACK(sh_fputs)
 {
 	if (sh_pipe_enabled) {
 		char str[1024]; // XXX
-		sprintf(str, "echo \"%s\" | %s", buf, sh_pipe_cmd); // XXX
+		sprintf(str, "echo '%s' | %s", buf, sh_pipe_cmd); // XXX
 		system(str);
 	} else fprintf(out, "%s", buf);
 }

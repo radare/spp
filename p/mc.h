@@ -179,7 +179,7 @@ PUT_CALLBACK(mc_fputs)
 {
 	if (mc_pipe_enabled) {
 		char str[1024]; // XXX
-		sprintf(str, "echo \"%s\" | %s", buf, mc_pipe_cmd); // XXX
+		sprintf(str, "echo '%s' | %s", buf, mc_pipe_cmd); // XXX
 		system(str);
 	} else fprintf(out, "%s", buf);
 }
