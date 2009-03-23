@@ -1,6 +1,9 @@
 Known bugs and missfeatures
 ===========================
 
-* nested conditionals not implemented
-  - ./spp -tmc t/nest.mc | grep BUG
-* nested tags not implemented (at all)
+* nested tags not implemented in core
+  - maybe we should provide an interface for the
+    conditional tags. Only if*/endif can change
+    the 'echo' attribute.
+  (make tag_callback) return an integer returning
+  the nesting level.

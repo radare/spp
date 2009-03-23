@@ -3,10 +3,23 @@
 static int iflevel = 0;
 static int ifvalue[10] = {0};
 
-#if 0
-// if lastif == 0 continue evaluating the nested tags
-// if 
-#endif
+/* Should be dynamic buffer */
+static int cmd_to_str(const char *cmd, char *out, int len)
+{
+	FILE *fd = popen(cmd, "r");
+	int ret;
+	memset(out, len,'\0');
+	if (fd == NULL)
+		return 0;
+	ret = fread(out, 1, len, fd);
+	//if (out[strlen(out)-1]=='\n')
+	//	out[strlen(out)-1]='\0';
+	pclose(fd);
+	if (ret==-1)
+		return 0;
+	out[ret]='\0';
+	return 1;
+}
 
 TAG_CALLBACK(mc_set)
 {
@@ -69,23 +82,17 @@ TAG_CALLBACK(mc_trace)
 
 TAG_CALLBACK(mc_echo)
 {
-	//char b[1024];
 	if (!echo) return;
 	fprintf(out, "%s", buf);
-	//snprintf(b, 1023, "echo \"%s\"", buf);
-//printf("\n==> (%s)\n\n", b);
-//fflush(stdout);
-	//system(b);
+	// TODO: add variable replacement here?? not necessary, done by {{get}}
 }
 
 TAG_CALLBACK(mc_system)
 {
+	char outbuf[1024];
 	if (!echo) return;
-	if (out != stdout) {
-		// pipe stdout to out fd
-	}
-	// printf("system(%s)\n", buf);
-	system(buf);
+	cmd_to_str(buf, outbuf, 1023);
+	fprintf(out, "%s", outbuf);
 }
 
 TAG_CALLBACK(mc_include)
@@ -135,7 +142,6 @@ TAG_CALLBACK(mc_ifeq)
 			echo = 1;
 		else echo = 0;
 //fprintf(stderr, "RESULT=%d\n", echo);
-/* SYNTAX ERRORR */
 	}
 	iflevel++;
 }
@@ -175,11 +181,6 @@ TAG_CALLBACK(mc_endif)
 	if (iflevel==0) {
 		echo = 1;
 	} else echo = ifvalue[iflevel];
-#if 0
-	if (iflevel==0)
-		echo = 1;
-	else echo = ifvalue[iflevel];
-#endif
 }
 
 TAG_CALLBACK(mc_default)
@@ -212,10 +213,7 @@ PUT_CALLBACK(mc_fputs)
 		char str[1024]; // XXX
 		sprintf(str, "echo '%s' | %s", buf, mc_pipe_cmd); // XXX
 		system(str);
-	} else {
-		if (buf[0]!='\n') //if (strlen(buf)>1)
-			fprintf(out, "%s", buf);
-	}
+	} else fprintf(out, "%s", buf);
 }
 
 struct Tag mc_tags[] = {
