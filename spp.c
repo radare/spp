@@ -135,7 +135,6 @@ inside_command = 1;
 			D fprintf(stderr, "strcpy(%s)(%s)\n",ptrr, s);
 			strcpy(ptrr, s);
 			free(s);
-			ptr2[0]='}';
 			ptr[-2]='{';
 
 			D fprintf(stderr, "strcat(%s)(%s)\n",ptrr, p);

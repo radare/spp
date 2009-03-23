@@ -1,5 +1,13 @@
 /* Mini MCMS */
 
+static int iflevel = 0;
+static int ifvalue[10] = {0};
+
+#if 0
+// if lastif == 0 continue evaluating the nested tags
+// if 
+#endif
+
 TAG_CALLBACK(mc_set)
 {
 	char *eq = strchr(buf, ' ');
@@ -89,10 +97,22 @@ TAG_CALLBACK(mc_include)
 TAG_CALLBACK(mc_if)
 {
 	char *var = getenv(buf);
-	if (!echo) return;
+
+//fprintf(stderr, "IF (%s) ifvalue[%d]=%d \n", buf, iflevel, echo);
+	if (iflevel>0 && ifvalue[iflevel]==0) {
+		ifvalue[iflevel] = 0;
+		iflevel++;
+		return;
+	}
+
+	ifvalue[iflevel] = echo;
 	if (var && *var!='0' && *var != '\0')
 		echo = 1;
 	else echo = 0;
+	//fprintf(stderr, "IFNESTED (%s)\n", buf);
+	//if (!echo) return;
+	iflevel++;
+	ifvalue[iflevel] = echo;
 }
 
 /* {{ ifeq $path / }} */
@@ -117,6 +137,7 @@ TAG_CALLBACK(mc_ifeq)
 //fprintf(stderr, "RESULT=%d\n", echo);
 /* SYNTAX ERRORR */
 	}
+	iflevel++;
 }
 
 TAG_CALLBACK(mc_else)
@@ -126,7 +147,6 @@ TAG_CALLBACK(mc_else)
 
 TAG_CALLBACK(mc_ifnot)
 {
-	if (!echo) return;
 	mc_if(buf, out);
 	mc_else(buf, out);
 }
@@ -144,11 +164,22 @@ TAG_CALLBACK(mc_ifin)
 			echo = 1;
 		}
 	}
+	iflevel++;
 }
 
 TAG_CALLBACK(mc_endif)
 {
-	echo = 1;
+	iflevel--;
+	//fprintf(stderr, "ENDIF (level=%d) (==%d)\n",
+	//iflevel , ifvalue[iflevel]);
+	if (iflevel==0) {
+		echo = 1;
+	} else echo = ifvalue[iflevel];
+#if 0
+	if (iflevel==0)
+		echo = 1;
+	else echo = ifvalue[iflevel];
+#endif
 }
 
 TAG_CALLBACK(mc_default)
@@ -181,7 +212,10 @@ PUT_CALLBACK(mc_fputs)
 		char str[1024]; // XXX
 		sprintf(str, "echo '%s' | %s", buf, mc_pipe_cmd); // XXX
 		system(str);
-	} else fprintf(out, "%s", buf);
+	} else {
+		if (buf[0]!='\n') //if (strlen(buf)>1)
+			fprintf(out, "%s", buf);
+	}
 }
 
 struct Tag mc_tags[] = {

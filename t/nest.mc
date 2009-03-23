@@ -3,14 +3,37 @@ Hello {{echo world {{echo :D}} ==}}-->
 {{system echo $a}}
 {{ifeq a {{get a}}}}
    {{set var {{get PATH}}}}
-   The path is {{get var}}
+Path is {{get PATH}}
+   The path is {{system echo $var}}
 {{endif}}
 
-{{if 0}}
-BUG: INVISIBLE TEXT
-{{if 1}}
-BUG: INVISIBLE TEXT
+{{set yes 1}}
+{{set no 0}}
+
+{{if yes}}
+  1 INNER VISIBLE TEXT
+{{if no}}
+  2 BUG: INVISIBLE TEXT
+   {{if no}}
+{{if yes}}
+TRAP
 {{endif}}
-BUG: INVISIBLE TEXT
+   fuck
+  {{endif}}
+  no one loves me
 {{endif}}
+  3 INNER VISIBLE TEXT
+{{endif}}
+
 VISIBLE TEXT
+
+{{if yes}}
+  YES DO IT
+{{endif}}
+
+{{if no}}
+  {{if yes}}
+THIS IS A TRAP
+  {{endif}}
+  NO DONT DO IT
+{{endif}}
