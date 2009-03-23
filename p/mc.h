@@ -61,12 +61,13 @@ TAG_CALLBACK(mc_trace)
 
 TAG_CALLBACK(mc_echo)
 {
-	char b[1024];
+	//char b[1024];
 	if (!echo) return;
-	snprintf(b, 1023, "echo \"%s\"", buf);
+	fprintf(out, "%s", buf);
+	//snprintf(b, 1023, "echo \"%s\"", buf);
 //printf("\n==> (%s)\n\n", b);
 //fflush(stdout);
-	system(b);
+	//system(b);
 }
 
 TAG_CALLBACK(mc_system)

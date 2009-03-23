@@ -37,6 +37,21 @@ D fprintf(stderr, "SPP_RUN(%s)\n", buf);
 	}
 }
 
+char *spp_run_str(char *buf)
+{
+	char b[1024];
+	FILE *fd = fopen(".out", "w");
+	spp_run(buf, fd);
+	fclose(fd);
+	fd = fopen(".out", "r");
+	fseek(fd, 0, SEEK_SET);
+	memset(b,'\0', 1024);
+	fread(b, 1, 1023, fd);
+	fclose(fd);
+	unlink(".out");
+	return strdup(b);
+}
+
 void lbuf_strcat(char *dst, char *src)
 {
 	int len = strlen(src);
@@ -60,8 +75,10 @@ int inside_command = 0;
 void spp_eval(char *buf, FILE *out)
 {
 	char *ptr, *ptr2;
+	char *ptrr = NULL;
 	int delta;
 
+retry:
 	/* per word */
 	if (tag_pre == NULL) {
 		do {
@@ -95,6 +112,7 @@ inside_command = 1;
 			spp_fputs(out, buf);
 			D printf("==> 0 (%s)\n", ptr);
 		}
+		ptrr = strstr(ptr+strlen(tag_pre), tag_pre);
 	}
 
 	/* (post) tag */
@@ -106,8 +124,29 @@ inside_command = 1;
 		return;
 	}
 	if (ptr2) {
-inside_command = 0;
 		*ptr2 = '\0';
+
+	if (ptrr) {
+		if (ptrr<ptr2) {
+			char *p = strdup(ptr2+2);
+			char *s = spp_run_str(ptrr+strlen(tag_pre));
+			D fprintf(stderr, "NESTED (%s)\n", ptrr+strlen(tag_pre));
+			D fprintf(stderr, "RESULT (%s)\n", s);
+			D fprintf(stderr, "strcpy(%s)(%s)\n",ptrr, s);
+			strcpy(ptrr, s);
+			free(s);
+			ptr2[0]='}';
+			ptr[-2]='{';
+
+			D fprintf(stderr, "strcat(%s)(%s)\n",ptrr, p);
+			strcat(ptrr, p);
+			buf = ptr-2;
+			D fprintf(stderr, "CONTINUE (%s)\n", buf);
+			ptrr=NULL;
+			goto retry;
+		}
+	}
+inside_command = 0;
 		if (lbuf && lbuf[0]) {
 			D printf("==> 1 (%s)\n", lbuf);
 			if (ptr) {
@@ -125,14 +164,10 @@ inside_command = 0;
 			lbuf_n = 0;
 		} else {
 			D printf("==> 2 (%s)\n", ptr);
-			E {
-			//	fprintf(out, "%s", buf);
-				if (!ptr) spp_fputs(out, "\n");
-			}
 			if (ptr) {
 				D printf(" ==> 2.1: run(%s)\n", ptr);
 				spp_run(ptr, out);
-			}
+			} else spp_fputs(out, "\n");
 		}
 		spp_fputs(out, ptr2+delta);
 	} else {
@@ -142,18 +177,14 @@ inside_command = 0;
 		} else {
 			if (lbuf == NULL) {
 				// XXX should never happen
-				printf("syntax error?\n");
+				fprintf(stderr, "syntax error?\n");
 				exit(1);
 			}
 			if (buf[0]) {
 				if (inside_command) {
 					lbuf_strcat(lbuf, buf);
-				} else {
-					spp_fputs(out, buf);
-				}
-			} else  {
-				spp_fputs(out, buf);
-			}
+				} else spp_fputs(out, buf);
+			} else spp_fputs(out, buf);
 		}
 	}
 }
@@ -173,7 +204,7 @@ void spp_io(FILE *in, FILE *out)
 		if (feof(in)) break;
 		spp_eval(buf, out);
 	}
-	E fprintf(out, "%s", lbuf);
+	spp_fputs(out, lbuf);
 }
 
 int spp_file(const char *file, FILE *out)
