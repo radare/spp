@@ -205,7 +205,17 @@ struct Tag mc_tags[] = {
 	{ NULL }
 };
 
+ARG_CALLBACK(mc_arg_d)
+{
+	char *eq = strchr(arg, '=');
+	if (eq) {
+		*eq = '\0';
+		setenv(arg, eq+1, 1);
+	} else setenv(arg, "", 1);
+}
+
 struct Arg mc_args[] = {
+	{ "-D", "define value of variable", 1, mc_arg_d },
 	{ NULL }
 };
 

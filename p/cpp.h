@@ -91,7 +91,7 @@ ARG_CALLBACK(cpp_arg_d)
 {
 	char *eq = strchr(arg, '=');
 	if (eq) {
-		eq = '\0';
+		*eq = '\0';
 		setenv(arg, eq+1, 1);
 	} else setenv(arg, "", 1);
 }
