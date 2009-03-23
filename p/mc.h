@@ -1,31 +1,36 @@
 /* Mini MCMS :: renamed to 'spp'? */
 
 /* Should be dynamic buffer */
-static int cmd_to_str(const char *cmd, char *out, int len)
+static char *cmd_to_str(const char *cmd)
 {
+	char *out = (char *)malloc(4096);
+	int ret = 0, len = 0, outlen = 4096;
 	FILE *fd = popen(cmd, "r");
-	int ret;
-	memset(out, len,'\0');
 	if (fd == NULL)
 		return 0;
-	ret = fread(out, 1, len, fd);
-	//if (out[strlen(out)-1]=='\n')
-	//	out[strlen(out)-1]='\0';
+	do {
+		len += ret;
+		ret = fread(out+len, 1, 1023, fd);
+		if (ret+1024>outlen) {
+			outlen += 4096;
+			out = realloc (out, outlen);
+		}
+	} while (ret>0);
 	pclose(fd);
-	if (ret==-1)
-		return 0;
-	out[ret]='\0';
-	return 1;
+	out[len]='\0';
+	return out;
 }
 
 TAG_CALLBACK(mc_set)
 {
-	char *eq = strchr(buf, ' ');
+	char *eq, *val = "";
 	if (!echo) return 0;
+	eq = strchr(buf, ' ');
 	if (eq) {
 		*eq = '\0';
-		setenv(buf, eq+1, 1);
-	} else setenv(buf, "", 1);
+		val = eq + 1;
+	}
+	setenv(buf, val, 1);
 	return 0;
 }
 
@@ -40,8 +45,7 @@ TAG_CALLBACK(mc_get)
 TAG_CALLBACK(mc_add)
 {
 	char res[32];
-	char *eq = strchr(buf, ' ');
-	char *var;
+	char *var, *eq = strchr(buf, ' ');
 	int ret = 0;
 	if (!echo) return 0;
 	if (eq) {
@@ -83,6 +87,7 @@ TAG_CALLBACK(mc_trace)
 	return 0;
 }
 
+/* TODO: deprecate */
 TAG_CALLBACK(mc_echo)
 {
 	if (!echo) return 0;
@@ -93,10 +98,11 @@ TAG_CALLBACK(mc_echo)
 
 TAG_CALLBACK(mc_system)
 {
-	char outbuf[1024];
+	char *str;
 	if (!echo) return 0;
-	cmd_to_str(buf, outbuf, 1023);
-	fprintf(out, "%s", outbuf);
+	str = cmd_to_str(buf);
+	fprintf(out, "%s", str);
+	free(str);
 	return 0;
 }
 

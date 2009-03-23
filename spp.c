@@ -372,6 +372,7 @@ int main(int argc, char **argv)
 
 	if (proc->eof)
 		proc->eof("", out);
+	fclose(out);
 
 	return 0;
 }
