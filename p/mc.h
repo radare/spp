@@ -136,11 +136,9 @@ TAG_CALLBACK(mc_ifeq)
 	} else {
 		echo = 1;
 		value = getenv(buf);
-//fprintf(stderr, "IFEQ CHECK HERE (%s)\n", value);
 		if (value==NULL || *value=='\0')
 			echo = 1;
 		else echo = 0;
-//fprintf(stderr, "RESULT=%d\n", echo);
 	}
 	return 1;
 }
@@ -186,32 +184,40 @@ TAG_CALLBACK(mc_default)
 	return 0;
 }
 
-
-static int mc_pipe_enabled = 0;
-static char *mc_pipe_cmd = NULL;
+static FILE *mc_pipe_fd = NULL;
 
 TAG_CALLBACK(mc_pipe)
 {
-	mc_pipe_enabled = 1;
-	free (mc_pipe_cmd);
-	mc_pipe_cmd = strdup (buf);
+	mc_pipe_fd = popen(buf, "w");
 	return 0;
 }
 
 TAG_CALLBACK(mc_endpipe)
 {
-	mc_pipe_enabled = 0;
-	free (mc_pipe_cmd);
-	mc_pipe_cmd = NULL;
+	/* TODO: Get output here */
+	int ret=0, len = 0;
+	int outlen = 4096;
+	char *str = (char *)malloc(4096);
+	do {
+		len += ret;
+		ret = fread(str+len, 1, 1023, mc_pipe_fd);
+		if (ret+1024>outlen) {
+			outlen += 4096;
+			str = realloc (str, outlen);
+		}
+	} while (ret>0);
+	str[len]='\0';
+	fprintf(out, "%s", str);
+	if (mc_pipe_fd)
+		pclose(mc_pipe_fd);
+	mc_pipe_fd = NULL;
 	return 0;
 }
 
 PUT_CALLBACK(mc_fputs)
 {
-	if (mc_pipe_enabled) {
-		char str[1024]; // XXX
-		sprintf(str, "echo '%s' | %s", buf, mc_pipe_cmd); // XXX
-		system(str);
+	if (mc_pipe_fd) {
+		fprintf(mc_pipe_fd, "%s", buf);
 	} else fprintf(out, "%s", buf);
 	return 0;
 }

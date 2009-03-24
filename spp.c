@@ -5,9 +5,8 @@
 char *lbuf = NULL;
 int lbuf_s = 1024;
 int lbuf_n = 0;
-int incmd = 0; /* too long varname */
-/* nested conditional stuff */
-static int ifl = 0;
+int incmd = 0;
+static int ifl = 0; /* conditional nest level */
 static int ifv[10] = {1};
 
 void spp_run(char *buf, FILE *out)
@@ -135,24 +134,24 @@ retry:
 	if (ptr2) {
 		*ptr2 = '\0';
 
-	if (ptrr) {
-		if (ptrr<ptr2) {
-			char *p = strdup(ptr2+2);
-			char *s = spp_run_str(ptrr+strlen(tag_pre));
-			D fprintf(stderr, "strcpy(%s)(%s)\n",ptrr, s);
-			strcpy(ptrr, s);
-			free(s);
-			ptr[-2]='{';
+		if (ptrr) {
+			if (ptrr<ptr2) {
+				char *p = strdup(ptr2+2);
+				char *s = spp_run_str(ptrr+strlen(tag_pre));
+				D fprintf(stderr, "strcpy(%s)(%s)\n",ptrr, s);
+				strcpy(ptrr, s);
+				free(s);
+				ptr[-2]='{';
 
-			D fprintf(stderr, "strcat(%s)(%s)\n",ptrr, p);
-			strcat(ptrr, p);
-			buf = ptr-2;
-			D fprintf(stderr, "CONTINUE (%s)\n", buf);
-			ptrr=NULL;
-			goto retry;
+				D fprintf(stderr, "strcat(%s)(%s)\n",ptrr, p);
+				strcat(ptrr, p);
+				buf = ptr-2;
+				D fprintf(stderr, "CONTINUE (%s)\n", buf);
+				ptrr=NULL;
+				goto retry;
+			}
 		}
-	}
-	incmd = 0;
+		incmd = 0;
 		if (lbuf && lbuf[0]) {
 			D printf("==> 1 (%s)\n", lbuf);
 			if (ptr) {
@@ -204,14 +203,17 @@ void spp_io(FILE *in, FILE *out)
 	while(!feof(in)) {
 		buf[0]='\0'; // ???
 		fgets(buf, 1023, in);
+		if (feof(in)) break;
 		if (proc->multiline) {
 			while(1) {
-				if (strstr(buf, proc->multiline)) {
-					fgets(buf+strlen(buf), 1023, in);
+				char *eol = buf+strlen(buf) - strlen(proc->multiline);
+				if (!strcmp(eol, proc->multiline)) {
+					D fprintf(stderr, "Multiline detected!\n");
+					fgets(eol, 1023, in);
+					if (feof(in)) break;
 				} else break;
 			}
 		}
-		if (feof(in)) break;
 		spp_eval(buf, out);
 	}
 	spp_fputs(out, lbuf);
