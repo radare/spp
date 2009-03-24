@@ -7,3 +7,7 @@ Known bugs and missfeatures
     the 'echo' attribute.
   (make tag_callback) return an integer returning
   the nesting level.
+
+* export 'linenumber' variable around all langs
+
+* Add support for multiline "\\\\n"

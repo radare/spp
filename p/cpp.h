@@ -55,12 +55,61 @@ TAG_CALLBACK(cpp_ifndef)
 	return 1;
 }
 
+static struct cpp_macro_t {
+	char *name;
+	char *args;
+	char *body;
+} cpp_macros[10];
+static int cpp_macros_n = 0;
+
+static void cpp_macro_add(char *name, char *args, char *body)
+{
+	char *ptr;
+	cpp_macros[cpp_macros_n].args = strdup(args);
+	cpp_macros[cpp_macros_n].body = strdup(body);
+	ptr = strchr(name, '(');
+	if (ptr)
+		ptr[1]='\0';
+	cpp_macros[cpp_macros_n].name = strdup(name);
+	cpp_macros_n++;
+}
+
+PUT_CALLBACK(cpp_fputs)
+{
+	int i;
+	for(i=0;i<cpp_macros_n;i++) {
+		if (strstr(buf, cpp_macros[i].name)) {
+			fprintf(stderr, "MACRO (%s) HIT\n",
+				cpp_macros[i].name);
+		}
+	}
+	fprintf(out, "%s", buf);
+	return 0;
+}
+
 TAG_CALLBACK(cpp_define)
 {
 	char *eq = strchr(buf, ' ');
 	if (eq) {
+		char *ptr = eq + 1;
+		char *macro = strchr(buf, '(');
 		*eq = '\0';
-		setenv(buf, eq+1, 1);
+		if (macro) {
+			//macro[0]='\0';
+			ptr = strchr(macro+1, ')');
+			if (ptr==NULL) {
+				fprintf(stderr, "Invalid syntax\n");
+				exit(1);
+			}
+			ptr = ptr + 1;
+			fprintf(stderr, "REGISTER MACRO:\n");
+			fprintf(stderr, "  name: %s\n", buf);
+			fprintf(stderr, "  args: %s\n", macro);
+			fprintf(stderr, "  body: %s\n", ptr+1);
+			cpp_macro_add(buf,macro,ptr+1);
+			// TODO: Name is "BUF(". for funny strstr
+		}
+		setenv(buf, ptr, 1);
 	} else setenv(buf, "", 1);
 	return 0;
 }
@@ -123,8 +172,9 @@ struct Proc cpp_proc = {
 	.eof = NULL,
 	.tag_pre = "#",
 	.tag_post = "\n",
-	.multiline = "\\",
+	.multiline = "\\\n",
 	.default_echo = 1,
+	.fputs = cpp_fputs,
 	.chop = 0,
 	.tag_begin = 1,
 };

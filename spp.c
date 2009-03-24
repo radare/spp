@@ -139,8 +139,6 @@ retry:
 		if (ptrr<ptr2) {
 			char *p = strdup(ptr2+2);
 			char *s = spp_run_str(ptrr+strlen(tag_pre));
-			D fprintf(stderr, "NESTED (%s)\n", ptrr+strlen(tag_pre));
-			D fprintf(stderr, "RESULT (%s)\n", s);
 			D fprintf(stderr, "strcpy(%s)(%s)\n",ptrr, s);
 			strcpy(ptrr, s);
 			free(s);
@@ -165,9 +163,7 @@ retry:
 				lbuf_strcat(lbuf, buf);
 				D printf("=(1)=> spp_run(%s)\n", lbuf);
 				spp_run(lbuf+delta, out);
-				//spp_run(lbuf+delta+1, out);
 			}
-			D printf("==>XXX spp_run(%s)\n", lbuf+delta+1);
 			lbuf[0]='\0';
 			lbuf_n = 0;
 		} else {
@@ -199,15 +195,22 @@ retry:
 /* TODO: detect nesting */
 void spp_io(FILE *in, FILE *out)
 {
-	char buf[1024];
+	char buf[4096];
 
 	if (lbuf==NULL)
-		lbuf = malloc(1024);
+		lbuf = malloc(4096);
 	lbuf[0]='\0';
 
 	while(!feof(in)) {
 		buf[0]='\0'; // ???
 		fgets(buf, 1023, in);
+		if (proc->multiline) {
+			while(1) {
+				if (strstr(buf, proc->multiline)) {
+					fgets(buf+strlen(buf), 1023, in);
+				} else break;
+			}
+		}
 		if (feof(in)) break;
 		spp_eval(buf, out);
 	}
