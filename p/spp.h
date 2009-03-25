@@ -115,8 +115,8 @@ TAG_CALLBACK(spp_include)
 	if (incdir) {
 		char *b = strdup(incdir);
 		b = realloc(b, strlen(b)+strlen(buf)+3);
-		strcat(b, buf);
 		strcat(b, "/");
+		strcat(b, buf);
 		spp_file(b, out);
 	} else spp_file(buf, out);
 	return 0;

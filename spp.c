@@ -222,12 +222,12 @@ void spp_io(FILE *in, FILE *out)
 int spp_file(const char *file, FILE *out)
 {
 	FILE *in = fopen(file, "r");
-	D printf("SPP-FILE(%s)\n", file);
+	D fprintf(stderr, "SPP-FILE(%s)\n", file);
 	if (in) {
 		spp_io (in, stdout);
 		fclose(in);
 		return 1;
-	}
+	} else fprintf(stderr, "Cannot find '%s'\n", file);
 	return 0;
 }
 
@@ -367,6 +367,8 @@ int main(int argc, char **argv)
 				if (i == argc)
 					fprintf(stderr, "No file specified.\n");
 				else {
+					if (argv[i][0] == '-')
+						continue;
 					spp_file(argv[i], stdout);
 					dostdin = 0;
 				}
