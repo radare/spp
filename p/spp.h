@@ -99,7 +99,7 @@ TAG_CALLBACK(spp_echo)
 
 TAG_CALLBACK(spp_error)
 {
-	fprintf(out, "ERROR: %s", buf);
+	fprintf(stderr, "ERROR: %s", buf);
 	exit(1);
 	return 0;
 }
