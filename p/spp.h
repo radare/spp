@@ -97,6 +97,13 @@ TAG_CALLBACK(spp_echo)
 	return 0;
 }
 
+TAG_CALLBACK(spp_error)
+{
+	fprintf(out, "ERROR: %s", buf);
+	exit(1);
+	return 0;
+}
+
 TAG_CALLBACK(spp_system)
 {
 	char *str;
@@ -237,6 +244,7 @@ struct Tag spp_tags[] = {
 	{ "add", spp_add },
 	{ "sub", spp_sub },
 	{ "echo", spp_echo },
+	{ "error", spp_error },
 	{ "trace", spp_trace },
 	{ "ifin", spp_ifin },
 	{ "ifnot", spp_ifnot },

@@ -3,4 +3,8 @@ Known bugs and missfeatures
 
 * export 'linenumber' variable around all langs
 
-* Add support for multiline "\\\\n"
+* set variable names with middle dash doesnt works
+  <{set foo-bar cow}>
+  <{ifeq foo-bar}>
+   <{trace failed}>
+  <{endif}>
