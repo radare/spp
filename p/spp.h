@@ -6,22 +6,23 @@ static char *cmd_to_str(const char *cmd)
 	char *out = (char *)malloc(4096);
 	int ret = 0, len = 0, outlen = 4096;
 	FILE *fd = popen(cmd, "r");
-	if (fd == NULL)
-		return 0;
-	do {
+	while(fd) {
 		len += ret;
 		ret = fread(out+len, 1, 1023, fd);
+		if (ret<1) {
+			pclose(fd);
+			fd = NULL;
+		}
 		if (ret+1024>outlen) {
 			outlen += 4096;
 			out = realloc (out, outlen);
 		}
-	} while (ret>0);
-	pclose(fd);
+	} 
 	out[len]='\0';
 	return out;
 }
 
-TAG_CALLBACK(mc_set)
+TAG_CALLBACK(spp_set)
 {
 	char *eq, *val = "";
 	if (!echo) return 0;
@@ -34,7 +35,7 @@ TAG_CALLBACK(mc_set)
 	return 0;
 }
 
-TAG_CALLBACK(mc_get)
+TAG_CALLBACK(spp_get)
 {
 	char *var = getenv(buf);
 	if (!echo) return 0;
@@ -42,7 +43,7 @@ TAG_CALLBACK(mc_get)
 	return 0;
 }
 
-TAG_CALLBACK(mc_add)
+TAG_CALLBACK(spp_add)
 {
 	char res[32];
 	char *var, *eq = strchr(buf, ' ');
@@ -60,7 +61,7 @@ TAG_CALLBACK(mc_add)
 	return 0;
 }
 
-TAG_CALLBACK(mc_sub)
+TAG_CALLBACK(spp_sub)
 {
 	char *eq = strchr(buf, ' ');
 	char *var;
@@ -78,7 +79,7 @@ TAG_CALLBACK(mc_sub)
 }
 
 // XXX This method needs some love
-TAG_CALLBACK(mc_trace)
+TAG_CALLBACK(spp_trace)
 {
 	char b[1024];
 	if (!echo) return 0;
@@ -88,7 +89,7 @@ TAG_CALLBACK(mc_trace)
 }
 
 /* TODO: deprecate */
-TAG_CALLBACK(mc_echo)
+TAG_CALLBACK(spp_echo)
 {
 	if (!echo) return 0;
 	fprintf(out, "%s", buf);
@@ -96,7 +97,7 @@ TAG_CALLBACK(mc_echo)
 	return 0;
 }
 
-TAG_CALLBACK(mc_system)
+TAG_CALLBACK(spp_system)
 {
 	char *str;
 	if (!echo) return 0;
@@ -106,14 +107,21 @@ TAG_CALLBACK(mc_system)
 	return 0;
 }
 
-TAG_CALLBACK(mc_include)
+TAG_CALLBACK(spp_include)
 {
+	char *incdir;
 	if (!echo) return 0;
-	spp_file(buf, out);
+	incdir = getenv("SPP_INCDIR");
+	if (incdir) {
+		char *b = strdup(incdir);
+		b = realloc(b, strlen(b)+strlen(buf)+2);
+		strcat(b, buf);
+		spp_file(b, out);
+	} else spp_file(buf, out);
 	return 0;
 }
 
-TAG_CALLBACK(mc_if)
+TAG_CALLBACK(spp_if)
 {
 	char *var = getenv(buf);
 	if (var && *var!='0' && *var != '\0')
@@ -123,7 +131,7 @@ TAG_CALLBACK(mc_if)
 }
 
 /* {{ ifeq $path / }} */
-TAG_CALLBACK(mc_ifeq)
+TAG_CALLBACK(spp_ifeq)
 {
 	char *value = buf;
 	char *eq = strchr(buf, ' ');
@@ -143,20 +151,20 @@ TAG_CALLBACK(mc_ifeq)
 	return 1;
 }
 
-TAG_CALLBACK(mc_else)
+TAG_CALLBACK(spp_else)
 {
 	echo = echo?0:1;
 	return 0;
 }
 
-TAG_CALLBACK(mc_ifnot)
+TAG_CALLBACK(spp_ifnot)
 {
-	mc_if(buf, out);
-	mc_else(buf, out);
+	spp_if(buf, out);
+	spp_else(buf, out);
 	return 1;
 }
 
-TAG_CALLBACK(mc_ifin)
+TAG_CALLBACK(spp_ifin)
 {
 	char *var, *ptr;
 	if (!echo) return 1;
@@ -172,27 +180,27 @@ TAG_CALLBACK(mc_ifin)
 	return 1;
 }
 
-TAG_CALLBACK(mc_endif)
+TAG_CALLBACK(spp_endif)
 {
 	return -1;
 }
 
-TAG_CALLBACK(mc_default)
+TAG_CALLBACK(spp_default)
 {
 	if (!echo) return 0;
 	fprintf(out, "\n** invalid command(%s)", buf);
 	return 0;
 }
 
-static FILE *mc_pipe_fd = NULL;
+static FILE *spp_pipe_fd = NULL;
 
-TAG_CALLBACK(mc_pipe)
+TAG_CALLBACK(spp_pipe)
 {
-	mc_pipe_fd = popen(buf, "w");
+	spp_pipe_fd = popen(buf, "w");
 	return 0;
 }
 
-TAG_CALLBACK(mc_endpipe)
+TAG_CALLBACK(spp_endpipe)
 {
 	/* TODO: Get output here */
 	int ret=0, len = 0;
@@ -200,7 +208,7 @@ TAG_CALLBACK(mc_endpipe)
 	char *str = (char *)malloc(4096);
 	do {
 		len += ret;
-		ret = fread(str+len, 1, 1023, mc_pipe_fd);
+		ret = fread(str+len, 1, 1023, spp_pipe_fd);
 		if (ret+1024>outlen) {
 			outlen += 4096;
 			str = realloc (str, outlen);
@@ -208,42 +216,48 @@ TAG_CALLBACK(mc_endpipe)
 	} while (ret>0);
 	str[len]='\0';
 	fprintf(out, "%s", str);
-	if (mc_pipe_fd)
-		pclose(mc_pipe_fd);
-	mc_pipe_fd = NULL;
+	if (spp_pipe_fd)
+		pclose(spp_pipe_fd);
+	spp_pipe_fd = NULL;
 	return 0;
 }
 
-PUT_CALLBACK(mc_fputs)
+PUT_CALLBACK(spp_fputs)
 {
-	if (mc_pipe_fd) {
-		fprintf(mc_pipe_fd, "%s", buf);
+	if (spp_pipe_fd) {
+		fprintf(spp_pipe_fd, "%s", buf);
 	} else fprintf(out, "%s", buf);
 	return 0;
 }
 
-struct Tag mc_tags[] = {
-	{ "get", mc_get },
-	{ "set", mc_set },
-	{ "add", mc_add },
-	{ "sub", mc_sub },
-	{ "echo", mc_echo },
-	{ "trace", mc_trace },
-	{ "ifin", mc_ifin },
-	{ "ifnot", mc_ifnot },
-	{ "ifeq", mc_ifeq },
-	{ "if", mc_if },
-	{ "else", mc_else },
-	{ "endif", mc_endif },
-	{ "pipe", mc_pipe },
-	{ "endpipe", mc_endpipe },
-	{ "include", mc_include },
-	{ "system", mc_system },
-	{ NULL, mc_default },
+struct Tag spp_tags[] = {
+	{ "get", spp_get },
+	{ "set", spp_set },
+	{ "add", spp_add },
+	{ "sub", spp_sub },
+	{ "echo", spp_echo },
+	{ "trace", spp_trace },
+	{ "ifin", spp_ifin },
+	{ "ifnot", spp_ifnot },
+	{ "ifeq", spp_ifeq },
+	{ "if", spp_if },
+	{ "else", spp_else },
+	{ "endif", spp_endif },
+	{ "pipe", spp_pipe },
+	{ "endpipe", spp_endpipe },
+	{ "include", spp_include },
+	{ "system", spp_system },
+	{ NULL, spp_default },
 	{ NULL }
 };
 
-ARG_CALLBACK(mc_arg_d)
+ARG_CALLBACK(spp_arg_i)
+{
+	setenv("SPP_INCDIR", arg, 1);
+	return 0;
+}
+
+ARG_CALLBACK(spp_arg_d)
 {
 	// TODO: Handle error
 	char *eq = strchr(arg, '=');
@@ -254,21 +268,22 @@ ARG_CALLBACK(mc_arg_d)
 	return 0;
 }
 
-struct Arg mc_args[] = {
-	{ "-D", "define value of variable", 1, mc_arg_d },
+struct Arg spp_args[] = {
+	{ "-I", "add include directory", 1, spp_arg_i },
+	{ "-D", "define value of variable", 1, spp_arg_d },
 	{ NULL }
 };
 
-struct Proc mc_proc = {
-	.name = "mc",
-	.tags = (struct Tag **)mc_tags,
-	.args = (struct Arg **)mc_args,
+struct Proc spp_proc = {
+	.name = "spp",
+	.tags = (struct Tag **)spp_tags,
+	.args = (struct Arg **)spp_args,
 	.token = " ",
 	.eof = NULL,
-	.tag_pre = "{{",
-	.tag_post = "}}",
+	.tag_pre = "<{",
+	.tag_post = "}>",
 	.chop = 1,
-	.fputs = mc_fputs,
+	.fputs = spp_fputs,
 	.multiline = NULL,
 	.default_echo = 1,
 	.tag_begin = 0,

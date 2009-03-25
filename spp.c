@@ -75,7 +75,7 @@ void lbuf_strcat(char *dst, char *src)
 	lbuf_n += len;
 }
 
-void spp_fputs(FILE *out, char *str)
+void do_fputs(FILE *out, char *str)
 {
 	if (!echo) return;
 	if (proc->fputs)
@@ -119,7 +119,7 @@ retry:
 		if (!tag_begin || (tag_begin && ptr == buf)) {
 			*ptr = '\0';
 			ptr = ptr + strlen(tag_pre);;
-			spp_fputs(out, buf);
+			do_fputs(out, buf);
 			D printf("==> 0 (%s)\n", ptr);
 		}
 		ptrr = strstr(ptr+strlen(tag_pre), tag_pre);
@@ -128,7 +128,7 @@ retry:
 	/* (post) tag */
 	if (ptr) ptr2 = strstr(ptr, tag_post);
 	else {
-		spp_fputs(out, buf);
+		do_fputs(out, buf);
 		return;
 	}
 	if (ptr2) {
@@ -156,7 +156,7 @@ retry:
 			D printf("==> 1 (%s)\n", lbuf);
 			if (ptr) {
 				lbuf_strcat(lbuf, buf);
-				spp_fputs(out, lbuf);
+				do_fputs(out, lbuf);
 				spp_run(ptr, out);
 			} else {
 				lbuf_strcat(lbuf, buf);
@@ -170,9 +170,9 @@ retry:
 			if (ptr) {
 				D printf(" ==> 2.1: run(%s)\n", ptr);
 				spp_run(ptr, out);
-			} else spp_fputs(out, "\n");
+			} else do_fputs(out, "\n");
 		}
-		spp_fputs(out, ptr2+delta);
+		do_fputs(out, ptr2+delta);
 	} else {
 		D printf("==> 3\n");
 		if (ptr) {
@@ -185,8 +185,8 @@ retry:
 			}
 			if (buf[0]) {
 				if (incmd) lbuf_strcat(lbuf, buf);
-				else spp_fputs(out, buf);
-			} else spp_fputs(out, buf);
+				else do_fputs(out, buf);
+			} else do_fputs(out, buf);
 		}
 	}
 }
@@ -216,7 +216,7 @@ void spp_io(FILE *in, FILE *out)
 		}
 		spp_eval(buf, out);
 	}
-	spp_fputs(out, lbuf);
+	do_fputs(out, lbuf);
 }
 
 int spp_file(const char *file, FILE *out)
