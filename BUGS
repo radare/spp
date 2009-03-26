@@ -1,6 +1,8 @@
 Known bugs and missfeatures
 ===========================
 
+* Argument parsing is not correct
+
 * Multiple tags in a single line not parsed properly :(
 
 * export 'linenumber' variable around all langs

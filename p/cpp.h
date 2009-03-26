@@ -10,7 +10,7 @@ TAG_CALLBACK(cpp_error)
 {
 	fprintf(out,"\n");
 	if (echo && buf != NULL) {
-		fprintf(out, "ERROR: %s\n", buf);
+		fprintf(out, "ERROR: %s (line=%d)\n", buf, lineno);
 		exit(1);
 	}
 	return 0;
@@ -20,7 +20,7 @@ TAG_CALLBACK(cpp_warning)
 {
 	fprintf(out,"\n");
 	if (echo && buf != NULL)
-		fprintf(out, "WARNING: %s\n", buf);
+		fprintf(out, "WARNING: line %d: %s\n", lineno, buf);
 	return 0;
 }
 

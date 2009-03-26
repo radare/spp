@@ -6,6 +6,7 @@ char *lbuf = NULL;
 int lbuf_s = 1024;
 int lbuf_n = 0;
 int incmd = 0;
+int lineno = 1;
 static int ifl = 0; /* conditional nest level */
 static int ifv[10] = {1};
 
@@ -195,6 +196,7 @@ retry:
 void spp_io(FILE *in, FILE *out)
 {
 	char buf[4096];
+	int lines;
 
 	if (lbuf==NULL)
 		lbuf = malloc(4096);
@@ -204,6 +206,7 @@ void spp_io(FILE *in, FILE *out)
 		buf[0]='\0'; // ???
 		fgets(buf, 1023, in);
 		if (feof(in)) break;
+		lines = 1;
 		if (proc->multiline) {
 			while(1) {
 				char *eol = buf+strlen(buf) - strlen(proc->multiline);
@@ -211,10 +214,12 @@ void spp_io(FILE *in, FILE *out)
 					D fprintf(stderr, "Multiline detected!\n");
 					fgets(eol, 1023, in);
 					if (feof(in)) break;
+					lines++;
 				} else break;
 			}
 		}
 		spp_eval(buf, out);
+		lineno += lines;
 	}
 	do_fputs(out, lbuf);
 }

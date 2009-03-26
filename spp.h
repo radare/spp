@@ -6,6 +6,7 @@
 #define VERSION "0.1"
 
 extern int echo;
+extern int lineno;
 
 #define GET_ARG(x,y,i) if (y[i][2]) x = y[i]+2; else x = y[++i]
 

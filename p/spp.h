@@ -52,7 +52,7 @@ TAG_CALLBACK(spp_set)
 		val = eq + 1;
 	}
 	if (spp_var_set(buf, val)==-1)
-		fprintf(stderr, "Invalid variable name '%s'\n", buf);
+		fprintf(stderr, "Invalid variable name '%s' at line %d\n", buf, lineno);
 	return 0;
 }
 
@@ -122,7 +122,7 @@ TAG_CALLBACK(spp_echo)
 TAG_CALLBACK(spp_error)
 {
 	if (!echo) return 0;
-	fprintf(stderr, "ERROR: %s\n", buf);
+	fprintf(stderr, "ERROR: %s (line=%d)\n", buf, lineno);
 	exit(1);
 	return 0;
 }
@@ -220,7 +220,7 @@ TAG_CALLBACK(spp_default)
 {
 	if (!echo) return 0;
 	if (buf[-1]!=';') /* commented tag */
-		fprintf(stderr, "WARNING: invalid command(%s)\n", buf);
+		fprintf(stderr, "WARNING: invalid command(%s) at line %d\n", buf, lineno);
 	return 0;
 }
 
