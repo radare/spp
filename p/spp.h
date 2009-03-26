@@ -1,5 +1,17 @@
 /* Mini MCMS :: renamed to 'spp'? */
 
+static char *spp_var_get(char *var)
+{
+//	fprintf(stderr, "GET(%s)\n", var);
+	return getenv(var);
+}
+
+static int spp_var_set(const char *var, const char *val)
+{
+//	fprintf(stderr, "SET(%s)(%s)\n", var, val);
+	return setenv(var, val, 1);
+}
+
 /* Should be dynamic buffer */
 static char *cmd_to_str(const char *cmd)
 {
@@ -26,19 +38,29 @@ TAG_CALLBACK(spp_set)
 {
 	char *eq, *val = "";
 	if (!echo) return 0;
+	for(eq=buf;eq[0];eq++) {
+		switch(eq[0]) {
+		case '-':
+		case '.':
+			eq[0]='_';
+			break;
+		}
+	}
 	eq = strchr(buf, ' ');
 	if (eq) {
 		*eq = '\0';
 		val = eq + 1;
 	}
-	setenv(buf, val, 1);
+	if (spp_var_set(buf, val)==-1)
+		fprintf(stderr, "Invalid variable name '%s'\n", buf);
 	return 0;
 }
 
 TAG_CALLBACK(spp_get)
 {
-	char *var = getenv(buf);
+	char *var;
 	if (!echo) return 0;
+	var = spp_var_get(buf);
 	if (var) fprintf(out, "%s", var);
 	return 0;
 }
@@ -51,7 +73,7 @@ TAG_CALLBACK(spp_add)
 	if (!echo) return 0;
 	if (eq) {
 		*eq = '\0';
-		var = getenv(buf);
+		var = spp_var_get(buf);
 		if (var != NULL)
 			ret = atoi(var);
 		ret += atoi(eq+1);
@@ -69,7 +91,7 @@ TAG_CALLBACK(spp_sub)
 	if (!echo) return 0;
 	if (eq) {
 		*eq = '\0';
-		var = getenv(buf);
+		var = spp_var_get(buf);
 		if (var == NULL) ret = 0;
 		else ret = atoi(var);
 		ret -= atoi(eq+1);
@@ -99,7 +121,8 @@ TAG_CALLBACK(spp_echo)
 
 TAG_CALLBACK(spp_error)
 {
-	fprintf(stderr, "ERROR: %s", buf);
+	if (!echo) return 0;
+	fprintf(stderr, "ERROR: %s\n", buf);
 	exit(1);
 	return 0;
 }
@@ -131,7 +154,7 @@ TAG_CALLBACK(spp_include)
 
 TAG_CALLBACK(spp_if)
 {
-	char *var = getenv(buf);
+	char *var = spp_var_get(buf);
 	if (var && *var!='0' && *var != '\0')
 		echo = 1;
 	else echo = 0;
@@ -145,16 +168,16 @@ TAG_CALLBACK(spp_ifeq)
 	char *eq = strchr(buf, ' ');
 	if (eq) {
 		*eq = '\0';
-		value = getenv(value);
+		value = spp_var_get(value);
 		if (value && !strcmp(value, eq+1)) {
 			echo = 1;
 		} else echo = 0;
 	} else {
-		echo = 1;
-		value = getenv(buf);
+		value = spp_var_get(buf);
 		if (value==NULL || *value=='\0')
 			echo = 1;
 		else echo = 0;
+// fprintf(stderr, "IFEQ(%s)(%s)=%d\n", buf, value, echo);
 	}
 	return 1;
 }
@@ -196,7 +219,8 @@ TAG_CALLBACK(spp_endif)
 TAG_CALLBACK(spp_default)
 {
 	if (!echo) return 0;
-	fprintf(out, "\n** invalid command(%s)", buf);
+	if (buf[-1]!=';') /* commented tag */
+		fprintf(stderr, "WARNING: invalid command(%s)\n", buf);
 	return 0;
 }
 
@@ -272,8 +296,8 @@ ARG_CALLBACK(spp_arg_d)
 	char *eq = strchr(arg, '=');
 	if (eq) {
 		*eq = '\0';
-		setenv(arg, eq+1, 1);
-	} else setenv(arg, "", 1);
+		spp_var_set(arg, eq+1);
+	} else spp_var_set(arg, "");
 	return 0;
 }
 

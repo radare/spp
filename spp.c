@@ -141,7 +141,7 @@ retry:
 				D fprintf(stderr, "strcpy(%s)(%s)\n",ptrr, s);
 				strcpy(ptrr, s);
 				free(s);
-				ptr[-2]='{';
+				ptr[-2] = tag_pre[0]; // XXX -2 check underflow?
 
 				D fprintf(stderr, "strcat(%s)(%s)\n",ptrr, p);
 				strcat(ptrr, p);

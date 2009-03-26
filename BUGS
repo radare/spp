@@ -1,6 +1,8 @@
 Known bugs and missfeatures
 ===========================
 
+* Multiple tags in a single line not parsed properly :(
+
 * export 'linenumber' variable around all langs
 
 * set variable names with middle dash doesnt works
