@@ -5,7 +5,7 @@ Known bugs and missfeatures
 
 * Multiple tags in a single line not parsed properly :(
 
-* export 'linenumber' variable around all langs
+* Add includeonce into 'spp'
 
 * set variable names with middle dash doesnt works
   <{set foo-bar cow}>
