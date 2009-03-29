@@ -65,6 +65,17 @@ TAG_CALLBACK(spp_get)
 	return 0;
 }
 
+TAG_CALLBACK(spp_getrandom)
+{
+	int max;
+	if (!echo) return 0;
+	srandom(getpid()); // TODO: change this to be portable
+	max = atoi(buf);
+	max = (int)(random()%max);
+	fprintf(out, "%d", max);
+	return 0;
+}
+
 TAG_CALLBACK(spp_add)
 {
 	char res[32];
@@ -172,12 +183,13 @@ TAG_CALLBACK(spp_ifeq)
 		if (value && !strcmp(value, eq+1)) {
 			echo = 1;
 		} else echo = 0;
+//fprintf(stderr, "IFEQ(%s)(%s)=%d\n", buf, eq+1, echo);
 	} else {
 		value = spp_var_get(buf);
 		if (value==NULL || *value=='\0')
 			echo = 1;
 		else echo = 0;
-// fprintf(stderr, "IFEQ(%s)(%s)=%d\n", buf, value, echo);
+//fprintf(stderr, "IFEQ(%s)(%s)=%d\n", buf, value, echo);
 	}
 	return 1;
 }
@@ -264,6 +276,7 @@ PUT_CALLBACK(spp_fputs)
 
 struct Tag spp_tags[] = {
 	{ "get", spp_get },
+	{ "getrandom", spp_getrandom },
 	{ "set", spp_set },
 	{ "add", spp_add },
 	{ "sub", spp_sub },

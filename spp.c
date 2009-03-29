@@ -110,6 +110,7 @@ retry:
 		return;
 	}
 
+	// TODO: do it in scope!
 	delta = strlen(tag_post);
 
 	/* (pre) tag */
@@ -148,7 +149,7 @@ retry:
 				strcat(ptrr, p);
 				buf = ptr-2;
 				D fprintf(stderr, "CONTINUE (%s)\n", buf);
-				ptrr=NULL;
+				ptrr = NULL;
 				goto retry;
 			}
 		}
@@ -163,6 +164,7 @@ retry:
 				lbuf_strcat(lbuf, buf);
 				D printf("=(1)=> spp_run(%s)\n", lbuf);
 				spp_run(lbuf+delta, out);
+				D printf("=(1)=> spp_run(%s)\n", lbuf);
 			}
 			lbuf[0]='\0';
 			lbuf_n = 0;
@@ -171,6 +173,10 @@ retry:
 			if (ptr) {
 				D printf(" ==> 2.1: run(%s)\n", ptr);
 				spp_run(ptr, out);
+				buf = ptr2+delta;
+				if (buf[0]=='\n') buf = buf+1;
+				D printf(" ==> 2.1: continue(%s)\n", ptr2+delta);
+				goto retry;
 			} else do_fputs(out, "\n");
 		}
 		do_fputs(out, ptr2+delta);
