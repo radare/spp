@@ -194,6 +194,49 @@ TAG_CALLBACK(spp_ifeq)
 	return 1;
 }
 
+TAG_CALLBACK(spp_hex)
+{
+	int i;
+	for(i=0;buf[i];i++) {
+		if (buf[i]>='0'&&buf[i]<='9') {
+			int b;
+			unsigned int ch;
+			b = buf[i+2];
+			buf[i+2]='\0';
+			sscanf(buf+i, "%02x", &ch);
+			fprintf(out, "%c", ch);
+			buf[i+2]=b;
+			buf=buf+2;
+		}
+	}
+	return 0;
+}
+
+TAG_CALLBACK(spp_grepline)
+{
+	FILE *fd;
+	char b[1024];
+	char *ptr;
+	int line;
+
+	if (!echo) return 1;
+	ptr = strchr(buf, ' ');
+	if (ptr) {
+		*ptr='\0';
+		fd = fopen(buf, "r");
+		line = atoi(ptr+1);
+		if (fd) {
+			while(!feof(fd) && line--)
+				fgets(b, 1023, fd);
+			fclose(fd);
+			fprintf(out, "%s", b);
+		} else {
+			fprintf(stderr, "Unable to open '%s'\n", buf);
+		}
+	}
+	return 0;
+}
+
 TAG_CALLBACK(spp_else)
 {
 	echo = echo?0:1;
@@ -276,7 +319,9 @@ PUT_CALLBACK(spp_fputs)
 
 struct Tag spp_tags[] = {
 	{ "get", spp_get },
+	{ "hex", spp_hex },
 	{ "getrandom", spp_getrandom },
+	{ "grepline", spp_grepline },
 	{ "set", spp_set },
 	{ "add", spp_add },
 	{ "sub", spp_sub },

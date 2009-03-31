@@ -7,6 +7,7 @@ int lbuf_s = 1024;
 int lbuf_n = 0;
 int incmd = 0;
 int lineno = 1;
+int printed = 0;
 static int ifl = 0; /* conditional nest level */
 static int ifv[10] = {1};
 
@@ -79,6 +80,8 @@ void lbuf_strcat(char *dst, char *src)
 void do_fputs(FILE *out, char *str)
 {
 	if (!echo) return;
+	if (str[0])
+		printed = 1;
 	if (proc->fputs)
 		proc->fputs(out, str);
 	else fprintf(out, "%s", str);
@@ -90,6 +93,7 @@ void spp_eval(char *buf, FILE *out)
 	char *ptrr = NULL;
 	int delta;
 
+	printed = 0;
 retry:
 	/* per word */
 	if (tag_pre == NULL) {
@@ -174,7 +178,7 @@ retry:
 				D printf(" ==> 2.1: run(%s)\n", ptr);
 				spp_run(ptr, out);
 				buf = ptr2+delta;
-				if (buf[0]=='\n') buf = buf+1;
+				if (buf[0]=='\n'&&printed) buf = buf+1;
 				D printf(" ==> 2.1: continue(%s)\n", ptr2+delta);
 				goto retry;
 			} else do_fputs(out, "\n");
