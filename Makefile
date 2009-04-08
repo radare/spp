@@ -18,11 +18,14 @@ symlinks:
 	ln -s ${BIN} acr
 	ln -s ${BIN} cpp
 	ln -s ${BIN} pod
-	ln -s ${BIN} mc
 	ln -s ${BIN} sh
 
 test:
-	./spp -tmc t/nest.mc | grep BUG
+	@for a in t/*spp* ; do \
+	  echo Testing $$a ; \
+	  ./spp -tspp $$a | grep BUG ; \
+	  true ; \
+	done
 
 install:
 	${INSTALL_BIN} spp ${BINDIR}

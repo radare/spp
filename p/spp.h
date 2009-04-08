@@ -300,9 +300,7 @@ TAG_CALLBACK(spp_switch)
 
 TAG_CALLBACK(spp_case)
 {
-	if (!strcmp(buf, spp_switch_str)) {
-		echo = 1;
-	} else echo = 0;
+	echo = strcmp(buf, spp_switch_str)?0:1;
 	return 0;
 }
 
