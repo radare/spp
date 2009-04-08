@@ -9,14 +9,14 @@ TAG_CALLBACK(pod_default)
 TAG_CALLBACK(pod_cut)
 {
 	fprintf(out, "\n");
-	echo = 0;
+	echo[ifl] = 0;
 	return 0;
 }
 
 TAG_CALLBACK(pod_head1)
 {
 	int i, len = strlen(buf);
-	echo = 1;
+	echo[ifl] = 1;
 	fprintf(out,"\n");
 	if (buf==NULL)
 		return 0;

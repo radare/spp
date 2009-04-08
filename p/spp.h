@@ -37,7 +37,7 @@ static char *cmd_to_str(const char *cmd)
 TAG_CALLBACK(spp_set)
 {
 	char *eq, *val = "";
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	for(eq=buf;eq[0];eq++) {
 		switch(eq[0]) {
 		case '-':
@@ -59,7 +59,7 @@ TAG_CALLBACK(spp_set)
 TAG_CALLBACK(spp_get)
 {
 	char *var;
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	var = spp_var_get(buf);
 	if (var) fprintf(out, "%s", var);
 	return 0;
@@ -68,7 +68,7 @@ TAG_CALLBACK(spp_get)
 TAG_CALLBACK(spp_getrandom)
 {
 	int max;
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	srandom(getpid()); // TODO: change this to be portable
 	max = atoi(buf);
 	max = (int)(rand()%max);
@@ -81,7 +81,7 @@ TAG_CALLBACK(spp_add)
 	char res[32];
 	char *var, *eq = strchr(buf, ' ');
 	int ret = 0;
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	if (eq) {
 		*eq = '\0';
 		var = spp_var_get(buf);
@@ -99,7 +99,7 @@ TAG_CALLBACK(spp_sub)
 	char *eq = strchr(buf, ' ');
 	char *var;
 	int ret = 0;
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	if (eq) {
 		*eq = '\0';
 		var = spp_var_get(buf);
@@ -115,7 +115,7 @@ TAG_CALLBACK(spp_sub)
 TAG_CALLBACK(spp_trace)
 {
 	char b[1024];
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	snprintf(b, 1023, "echo '%s' > /dev/stderr", buf);
 	system(b);
 	return 0;
@@ -124,7 +124,7 @@ TAG_CALLBACK(spp_trace)
 /* TODO: deprecate */
 TAG_CALLBACK(spp_echo)
 {
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	fprintf(out, "%s", buf);
 	// TODO: add variable replacement here?? not necessary, done by {{get}}
 	return 0;
@@ -132,7 +132,7 @@ TAG_CALLBACK(spp_echo)
 
 TAG_CALLBACK(spp_error)
 {
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	fprintf(stderr, "ERROR: %s (line=%d)\n", buf, lineno);
 	exit(1);
 	return 0;
@@ -141,7 +141,7 @@ TAG_CALLBACK(spp_error)
 TAG_CALLBACK(spp_system)
 {
 	char *str;
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	str = cmd_to_str(buf);
 	fprintf(out, "%s", str);
 	free(str);
@@ -151,7 +151,7 @@ TAG_CALLBACK(spp_system)
 TAG_CALLBACK(spp_include)
 {
 	char *incdir;
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	incdir = getenv("SPP_INCDIR");
 	if (incdir) {
 		char *b = strdup(incdir);
@@ -167,8 +167,8 @@ TAG_CALLBACK(spp_if)
 {
 	char *var = spp_var_get(buf);
 	if (var && *var!='0' && *var != '\0')
-		echo = 1;
-	else echo = 0;
+		echo[ifl+1] = 1;
+	else echo[ifl+1] = 0;
 	return 1;
 }
 
@@ -181,15 +181,15 @@ TAG_CALLBACK(spp_ifeq)
 		*eq = '\0';
 		value = spp_var_get(value);
 		if (value && !strcmp(value, eq+1)) {
-			echo = 1;
-		} else echo = 0;
-//fprintf(stderr, "IFEQ(%s)(%s)=%d\n", buf, eq+1, echo);
+			echo[ifl+1] = 1;
+		} else echo[ifl+1] = 0;
+//fprintf(stderr, "IFEQ(%s)(%s)=%d\n", buf, eq+1, echo[ifl]);
 	} else {
 		value = spp_var_get(buf);
 		if (value==NULL || *value=='\0')
-			echo = 1;
-		else echo = 0;
-//fprintf(stderr, "IFEQ(%s)(%s)=%d\n", buf, value, echo);
+			echo[ifl+1] = 1;
+		else echo[ifl+1] = 0;
+//fprintf(stderr, "IFEQ(%s)(%s)=%d\n", buf, value, echo[ifl]);
 	}
 	return 1;
 }
@@ -219,7 +219,7 @@ TAG_CALLBACK(spp_grepline)
 	char *ptr;
 	int line;
 
-	if (!echo) return 1;
+	if (!echo[ifl]) return 1;
 	ptr = strchr(buf, ' ');
 	if (ptr) {
 		*ptr='\0';
@@ -239,7 +239,7 @@ TAG_CALLBACK(spp_grepline)
 
 TAG_CALLBACK(spp_else)
 {
-	echo = echo?0:1;
+	echo[ifl] = echo[ifl]?0:1;
 	return 0;
 }
 
@@ -253,14 +253,14 @@ TAG_CALLBACK(spp_ifnot)
 TAG_CALLBACK(spp_ifin)
 {
 	char *var, *ptr;
-	if (!echo) return 1;
+	if (!echo[ifl]) return 1;
 	ptr = strchr(buf, ' ');
-	echo = 0;
+	echo[ifl+1] = 0;
 	if (ptr) {
 		*ptr='\0';
 		var = getenv(buf);
 		if (strstr(ptr+1, var)) {
-			echo = 1;
+			echo[ifl+1] = 1;
 		}
 	}
 	return 1;
@@ -273,7 +273,7 @@ TAG_CALLBACK(spp_endif)
 
 TAG_CALLBACK(spp_default)
 {
-	if (!echo) return 0;
+	if (!echo[ifl]) return 0;
 	if (buf[-1]!=';') /* commented tag */
 		fprintf(stderr, "WARNING: invalid command(%s) at line %d\n", buf, lineno);
 	return 0;
@@ -300,7 +300,7 @@ TAG_CALLBACK(spp_switch)
 
 TAG_CALLBACK(spp_case)
 {
-	echo = strcmp(buf, spp_switch_str)?0:1;
+	echo[ifl] = strcmp(buf, spp_switch_str)?0:1;
 	return 0;
 }
 

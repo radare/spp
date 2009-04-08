@@ -9,7 +9,7 @@ TAG_CALLBACK(cpp_default)
 TAG_CALLBACK(cpp_error)
 {
 	fprintf(out,"\n");
-	if (echo && buf != NULL) {
+	if (echo[ifl] && buf != NULL) {
 		fprintf(out, "ERROR: %s (line=%d)\n", buf, lineno);
 		exit(1);
 	}
@@ -19,7 +19,7 @@ TAG_CALLBACK(cpp_error)
 TAG_CALLBACK(cpp_warning)
 {
 	fprintf(out,"\n");
-	if (echo && buf != NULL)
+	if (echo[ifl] && buf != NULL)
 		fprintf(out, "WARNING: line %d: %s\n", lineno, buf);
 	return 0;
 }
@@ -28,23 +28,23 @@ TAG_CALLBACK(cpp_if)
 {
 	char *var = getenv(buf+((*buf=='!')?1:0));
 	if (var && *var=='1')
-		echo = 1;
-	else echo = 0;
-	if (*buf=='!') echo = !!!echo;
+		echo[ifl+1] = 1;
+	else echo[ifl+1] = 0;
+	if (*buf=='!') echo[ifl+1] = !!!echo[ifl+1];
 	return 1;
 }
 
 TAG_CALLBACK(cpp_ifdef)
 {
 	char *var = getenv(buf);
-	if (var) echo = 1;
-	else echo = 0;
+	if (var) echo[ifl+1] = 1;
+	else echo[ifl+1] = 0;
 	return 1;
 }
 
 TAG_CALLBACK(cpp_else)
 {
-	echo = echo?0:1;
+	echo[ifl] = echo[ifl]?0:1;
 	return 0;
 }
 
@@ -116,13 +116,12 @@ TAG_CALLBACK(cpp_define)
 
 TAG_CALLBACK(cpp_endif)
 {
-	echo = 1;
 	return -1;
 }
 
 TAG_CALLBACK(cpp_include)
 {
-	if (echo) spp_file(buf, out);
+	if (echo[ifl]) spp_file(buf, out);
 	return 0;
 }
 

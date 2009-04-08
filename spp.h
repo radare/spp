@@ -5,7 +5,10 @@
 
 #define VERSION "0.1"
 
-extern int echo;
+#define MAXIFL 128
+
+extern int ifl;
+extern int echo[MAXIFL];
 extern int lineno;
 
 #define GET_ARG(x,y,i) if (y[i][2]) x = y[i]+2; else x = y[++i]
@@ -56,7 +59,8 @@ void spp_io(FILE *in, FILE *out);
 #include "config.h"
 
 char *tag_pre, *tag_post, *token;
-int tag_begin, echo;
+int tag_begin, echo[MAXIFL];
+int ifl = 0; /* conditional nest level */
 
 #if DEBUG
 #define D if (1)
