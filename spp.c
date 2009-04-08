@@ -217,6 +217,11 @@ void spp_io(FILE *in, FILE *out)
 		fgets(buf, 1023, in);
 		if (feof(in)) break;
 		lines = 1;
+		if (!memcmp(buf, "#!", 2)) {
+			fgets(buf, 1023, in);
+			if (feof(in)) break;
+			lines++;
+		}
 		if (proc->multiline) {
 			while(1) {
 				char *eol = buf+strlen(buf) - strlen(proc->multiline);

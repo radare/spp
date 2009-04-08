@@ -14,4 +14,4 @@ Hello World
 <{ endpipe }>
    ---
 
-Hello <{echo world <{echo :D}} ==}>-->
+Hello <{echo world <{echo :D}> ==}>-->

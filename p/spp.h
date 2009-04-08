@@ -71,7 +71,7 @@ TAG_CALLBACK(spp_getrandom)
 	if (!echo) return 0;
 	srandom(getpid()); // TODO: change this to be portable
 	max = atoi(buf);
-	max = (int)(random()%max);
+	max = (int)(rand()%max);
 	fprintf(out, "%d", max);
 	return 0;
 }
@@ -287,6 +287,32 @@ TAG_CALLBACK(spp_pipe)
 	return 0;
 }
 
+static char *spp_switch_str = NULL;
+
+TAG_CALLBACK(spp_switch)
+{
+	char *var = spp_var_get(buf);
+	if (var)
+		spp_switch_str = strdup(var);
+	else spp_switch_str = strdup("");
+	return 0;
+}
+
+TAG_CALLBACK(spp_case)
+{
+	if (!strcmp(buf, spp_switch_str)) {
+		echo = 1;
+	} else echo = 0;
+	return 0;
+}
+
+TAG_CALLBACK(spp_endswitch)
+{
+	free(spp_switch_str);
+	spp_switch_str = NULL;
+	return 0;
+}
+
 TAG_CALLBACK(spp_endpipe)
 {
 	/* TODO: Get output here */
@@ -325,6 +351,9 @@ struct Tag spp_tags[] = {
 	{ "set", spp_set },
 	{ "add", spp_add },
 	{ "sub", spp_sub },
+	{ "switch", spp_switch },
+	{ "case", spp_case },
+	{ "endswitch", spp_endswitch },
 	{ "echo", spp_echo },
 	{ "error", spp_error },
 	{ "trace", spp_trace },

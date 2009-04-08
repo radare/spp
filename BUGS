@@ -3,8 +3,6 @@ Known bugs and missfeatures
 
 * Argument parsing is not correct
 
-* Multiple tags in a single line not parsed properly :(
-
 * Add includeonce into 'spp'
 
 * set variable names with middle dash doesnt works
