@@ -22,8 +22,10 @@ symlinks:
 
 test:
 	@for a in t/*spp* ; do \
-	  echo Testing $$a ; \
-	  ./spp -tspp $$a | grep BUG ; \
+	  printf "Testing $$a... " ; \
+	 ./spp -tspp $$a > out.txt ; \
+	  if [ -z "`cat out.txt|grep BUG`" ]; then echo ok ; else echo oops ; fi ; \
+	  rm -f out.txt ; \
 	  true ; \
 	done
 

@@ -295,7 +295,7 @@ TAG_CALLBACK(spp_switch)
 	if (var)
 		spp_switch_str = strdup(var);
 	else spp_switch_str = strdup("");
-	return 0;
+	return 1;
 }
 
 TAG_CALLBACK(spp_case)
@@ -308,7 +308,7 @@ TAG_CALLBACK(spp_endswitch)
 {
 	free(spp_switch_str);
 	spp_switch_str = NULL;
-	return 0;
+	return -1;
 }
 
 TAG_CALLBACK(spp_endpipe)
