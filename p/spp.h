@@ -377,7 +377,7 @@ ARG_CALLBACK(spp_arg_i)
 
 ARG_CALLBACK(spp_arg_d)
 {
-	// TODO: Handle error
+	/* TODO: Handle error */
 	char *eq = strchr(arg, '=');
 	if (eq) {
 		*eq = '\0';

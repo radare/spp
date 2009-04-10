@@ -49,15 +49,12 @@ void spp_run(char *buf, FILE *out)
 char *spp_run_str(char *buf)
 {
 	char b[1024];
-	FILE *fd = fopen(".out", "w");
+	FILE *fd = tmpfile();
 	spp_run(buf, fd);
-	fclose(fd);
-	fd = fopen(".out", "r");
 	fseek(fd, 0, SEEK_SET);
 	memset(b,'\0', 1024);
 	fread(b, 1, 1023, fd);
-	fclose(fd);
-	unlink(".out");
+	fclose(fd); // fclose removes tmpfile()
 	return strdup(b);
 }
 
@@ -129,14 +126,12 @@ retry:
 	}
 
 	/* (post) tag */
-	if (ptr) ptr2 = strstr(ptr, tag_post);
-	else {
+	if (!ptr) {
 		do_fputs(out, buf);
 		return;
-	}
+	} else ptr2 = strstr(ptr, tag_post);
 	if (ptr2) {
 		*ptr2 = '\0';
-
 		if (ptrr) {
 			if (ptrr<ptr2) {
 				char *p = strdup(ptr2+2);
@@ -207,6 +202,10 @@ void spp_io(FILE *in, FILE *out)
 
 	if (lbuf==NULL)
 		lbuf = malloc(4096);
+	if (lbuf == NULL) {
+		fprintf(stderr, "Out of memory.\n");
+		exit(1);
+	}
 	lbuf[0]='\0';
 
 	while(!feof(in)) {

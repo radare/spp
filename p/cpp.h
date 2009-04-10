@@ -95,7 +95,7 @@ TAG_CALLBACK(cpp_define)
 		char *macro = strchr(buf, '(');
 		*eq = '\0';
 		if (macro) {
-			//macro[0]='\0';
+			/*macro[0]='\0'; */
 			ptr = strchr(macro+1, ')');
 			if (ptr==NULL) {
 				fprintf(stderr, "Invalid syntax\n");
@@ -107,7 +107,7 @@ TAG_CALLBACK(cpp_define)
 			fprintf(stderr, "  args: %s\n", macro);
 			fprintf(stderr, "  body: %s\n", ptr+1);
 			cpp_macro_add(buf,macro,ptr+1);
-			// TODO: Name is "BUF(". for funny strstr
+			/* TODO: Name is "BUF(". for funny strstr */
 		}
 		setenv(buf, ptr, 1);
 	} else setenv(buf, "", 1);
