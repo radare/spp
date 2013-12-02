@@ -240,7 +240,7 @@ int spp_file(const char *file, FILE *out)
 	FILE *in = fopen(file, "r");
 	D fprintf(stderr, "SPP-FILE(%s)\n", file);
 	if (in) {
-		spp_io (in, stdout);
+		spp_io (in, out);
 		fclose(in);
 		return 1;
 	} else fprintf(stderr, "Cannot find '%s'\n", file);
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
 				else {
 					if (argv[i][0] == '-')
 						continue;
-					spp_file(argv[i], stdout);
+					spp_file(argv[i], out);
 					dostdin = 0;
 				}
 			}
