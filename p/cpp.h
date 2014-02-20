@@ -130,6 +130,7 @@ struct Tag cpp_tags[] = {
 	{ "ifndef", cpp_ifndef },
 	{ "endif", cpp_endif },
 	{ "if", cpp_if },
+	{ "else", cpp_else },
 	{ "include", cpp_include },
 	{ "define", cpp_define },
 	{ "error", cpp_error },
