@@ -73,7 +73,6 @@ struct Proc sh_proc = {
 	.name = "sh",
 	.tags = (struct Tag **)sh_tags,
 	.args = (struct Arg **)sh_args,
-	.fputs = NULL,
 	.eof = NULL,
 	.token = NULL,
 	.tag_pre = "{{",
