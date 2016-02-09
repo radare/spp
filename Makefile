@@ -33,6 +33,9 @@ test:
 install:
 	${INSTALL_BIN} spp ${BINDIR}
 
+uninstall:
+	rm -f ${BINDIR}/${BIN}
+
 clean:
 	-rm -f ${BIN} ${OBJ} ${ODF}
 
