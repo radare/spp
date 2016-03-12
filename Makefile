@@ -31,7 +31,7 @@ test:
 	done
 
 install:
-	${INSTALL_BIN} spp ${BINDIR}
+	${INSTALL_BIN} ${BIN} ${BINDIR}
 
 uninstall:
 	rm -f ${BINDIR}/${BIN}
