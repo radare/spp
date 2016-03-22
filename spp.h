@@ -1,7 +1,23 @@
+#ifndef _INCLUDE_SPP_H_
+#define _INCLUDE_SPP_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> // only for unlink
+
+#ifdef _MSC_VER
+#include <io.h>
+static int setenv( const char *k, const char *v, int overwrite ) {
+       char buf[128];
+       sprintf(buf,"%s=%s", k, getenv(k) && (!overwrite) ? (const char *)getenv(k) : v );
+       _putenv(buf);
+       return 0;
+}
+#define popen    _popen
+#define pclose   _pclose
+#define srandom  srand
+#define snprintf _snprintf
+#endif
 
 #define VERSION "1.0"
 
@@ -56,14 +72,14 @@ void spp_run(char *buf, FILE *out);
 void spp_eval(char *buf, FILE *out);
 void spp_io(FILE *in, FILE *out);
 
-#include "config.h"
-
-char *tag_pre, *tag_post, *token;
-int tag_begin, echo[MAXIFL];
-int ifl = 0; /* conditional nest level */
+void spp_proc_list();
+void spp_proc_list_kw();
+void spp_proc_set(struct Proc *p, char *arg, int fail);
 
 #if DEBUG
 #define D if (1)
 #else
 #define D if (0)
+#endif
+
 #endif

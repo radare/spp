@@ -1,6 +1,7 @@
 /* MIT (C) pancake (at) nopcode (dot) org */
 
 #include "spp.h"
+#include "config.h"
 
 char *lbuf = NULL;
 int lbuf_s = 1024;
@@ -8,9 +9,12 @@ int lbuf_n = 0;
 int incmd = 0;
 int lineno = 1;
 int printed = 0;
+char *tag_pre, *tag_post, *token;
+int tag_begin, echo[MAXIFL];
+int ifl = 0; /* conditional nest level */
 
-void spp_run(char *buf, FILE *out)
-{
+
+void spp_run(char *buf, FILE *out) {
 	int i, ret;
 	char *tok;
 
@@ -46,8 +50,7 @@ void spp_run(char *buf, FILE *out)
 }
 
 /* XXX : Do not dump to temporally files!! */
-char *spp_run_str(char *buf)
-{
+char *spp_run_str(char *buf) {
 	char b[1024];
 	FILE *fd = tmpfile();
 	spp_run(buf, fd);
@@ -58,8 +61,7 @@ char *spp_run_str(char *buf)
 	return strdup(b);
 }
 
-void lbuf_strcat(char *dst, char *src)
-{
+void lbuf_strcat(char *dst, char *src) {
 	int len = strlen(src);
 	if ((len+lbuf_n) > lbuf_s)
 		lbuf = realloc(lbuf, lbuf_s<<1);
@@ -67,8 +69,7 @@ void lbuf_strcat(char *dst, char *src)
 	lbuf_n += len;
 }
 
-void do_fputs(FILE *out, char *str)
-{
+void do_fputs(FILE *out, char *str) {
 	int i;
 	for (i=0;i<=ifl;i++) {
 		if (!echo[i])
@@ -81,8 +82,7 @@ void do_fputs(FILE *out, char *str)
 	else fprintf(out, "%s", str);
 }
 
-void spp_eval(char *buf, FILE *out)
-{
+void spp_eval(char *buf, FILE *out) {
 	char *ptr, *ptr2;
 	char *ptrr = NULL;
 	int delta;
@@ -195,8 +195,7 @@ retry:
 }
 
 /* TODO: detect nesting */
-void spp_io(FILE *in, FILE *out)
-{
+void spp_io(FILE *in, FILE *out) {
 	char buf[4096];
 	int lines;
 
@@ -235,8 +234,7 @@ void spp_io(FILE *in, FILE *out)
 	do_fputs(out, lbuf);
 }
 
-int spp_file(const char *file, FILE *out)
-{
+int spp_file(const char *file, FILE *out) {
 	FILE *in = fopen(file, "r");
 	D fprintf(stderr, "SPP-FILE(%s)\n", file);
 	if (in) {
@@ -247,47 +245,23 @@ int spp_file(const char *file, FILE *out)
 	return 0;
 }
 
-void spp_help(char *argv0)
-{
+void spp_proc_list_kw() {
 	int i;
-	printf("Usage: %s [-othesv] [file] [...]\n", argv0);
-	printf(	"  -o [file]     set output file (stdout)\n"
-		"  -t [type]     define processor type (cpp)\n"
-		"  -e [str]      evaluate this string with the selected proc\n"
-		"  -s [str]      show this string before anything\n"
-		"  -l            list all built-in preprocessors\n"
-		"  -L            list keywords registered by the processor\n"
-		"  -n            do not read from stdin\n"
-		"  -v            show version information\n");
-	if (proc) {
-		printf("%s specific flags:\n", proc->name);
-		for(i=0;args[i].flag;i++)
-			printf(" %s   %s\n", args[i].flag, args[i].desc);
-	}
-	exit(0);
+	for (i=0;tags[i].name;i++)
+		printf ("%s\n", tags[i].name);
 }
 
-void spp_proc_list_kw()
-{
+void spp_proc_list() {
 	int i;
-	for(i=0;tags[i].name;i++)
-		printf("%s\n", tags[i].name);
+	for (i=0;procs[i];i++)
+		printf ("%s\n", procs[i]->name);
 }
 
-void spp_proc_list()
-{
-	int i;
-	for(i=0;procs[i];i++)
-		printf("%s\n", procs[i]->name);
-}
-
-void spp_proc_set(struct Proc *p, char *arg, int fail)
-{
+void spp_proc_set(struct Proc *p, char *arg, int fail) {
 	int i, j;
-	//proc = NULL;
 	if (arg)
-	for(j=0;procs[j];j++) {
-		if (!strcmp(procs[j]->name, arg)) {
+	for (j=0; procs[j];j++) {
+		if (!strcmp (procs[j]->name, arg)) {
 			proc = procs[j];
 			D printf("SET PROC:(%s)(%s)\n", arg, proc->name);
 			break;
@@ -311,92 +285,4 @@ void spp_proc_set(struct Proc *p, char *arg, int fail)
 		args = (struct Arg*)proc->args;
 		tags = (struct Tag*)proc->tags;
 	}
-}
-
-int main(int argc, char **argv)
-{
-	int dostdin = 1;
-	int i, j;
-	FILE *out = stdout;
-	char *arg;
-
-	spp_proc_set(proc, argv[0], 0);
-
-	if (argc<2)
-		spp_io (stdin, stdout);
-	else {
-		for(i=1;i<argc;i++) {
-			/* check preprocessor args */
-			if (args)
-			for(j=0;args[j].flag;j++) {
-				if (!memcmp(argv[i], args[j].flag, 2)) {
-					if (args[j].has_arg) {
-						GET_ARG(arg, argv, i);
-						args[j].callback(arg);
-					} else args[j].callback(NULL);
-					continue;
-				}
-			}
-
-			/* TODO: Add these flags in Arg[] */
-			if (!memcmp(argv[i], "-o", 2)) {
-				GET_ARG(arg, argv, i);
-				if (arg!=NULL)
-					out = fopen(arg, "w");
-				if (arg == NULL || out == NULL) {
-					fprintf(stderr, "Cannot open output file\n");
-					exit(1);
-				}
-			} else
-			if (!memcmp(argv[i],"-t", 2)) {
-				GET_ARG(arg, argv, i);
-				spp_proc_set(proc, arg, 1);
-			} else
-			if (!strcmp(argv[i],"-v")) {
-				printf("spp-%s\n", VERSION);
-				exit(1);
-			} else
-			if (!strcmp(argv[i],"-h")) {
-				/* show help */
-				spp_help(argv[0]);
-			} else
-			if (!strcmp(argv[i],"-n")) {
-				dostdin = 0;
-			} else
-			if (!strcmp(argv[i],"-l")) {
-				spp_proc_list();
-				exit(0);
-			} else
-			if (!strcmp(argv[i],"-L")) {
-				spp_proc_list_kw();
-				exit(0);
-			} else
-			if (!strcmp(argv[i],"-s")) {
-				GET_ARG(arg, argv, i);
-				if (arg==NULL) arg = "";
-				fprintf(out, "%s\n", arg);
-			} else
-			if (!strcmp(argv[i],"-e")) {
-				GET_ARG(arg, argv, i);
-				if (arg==NULL) arg = "";
-				spp_eval(arg, out);
-			} else {
-				if (i == argc)
-					fprintf(stderr, "No file specified.\n");
-				else {
-					if (argv[i][0] == '-')
-						continue;
-					spp_file(argv[i], out);
-					dostdin = 0;
-				}
-			}
-		}
-		if (dostdin) spp_io(stdin, out);
-	}
-
-	if (proc->eof)
-		proc->eof("", out);
-	fclose(out);
-
-	return 0;
 }
