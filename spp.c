@@ -250,15 +250,22 @@ int spp_file(const char *file, FILE *out)
 void spp_help(char *argv0)
 {
 	int i;
+
+	char supported[128] = "";
+	for( i = 0; procs[i]; ++i ) {
+		if( i ) strcat( supported, "," );
+		strcat( supported, procs[i]->name );
+	}
+
 	printf("Usage: %s [-othesv] [file] [...]\n", argv0);
 	printf(	"  -o [file]     set output file (stdout)\n"
-		"  -t [type]     define processor type (cpp)\n"
+		"  -t [type]     define processor type (%s)\n"
 		"  -e [str]      evaluate this string with the selected proc\n"
 		"  -s [str]      show this string before anything\n"
 		"  -l            list all built-in preprocessors\n"
 		"  -L            list keywords registered by the processor\n"
 		"  -n            do not read from stdin\n"
-		"  -v            show version information\n");
+		"  -v            show version information\n", supported);
 	if (proc) {
 		printf("%s specific flags:\n", proc->name);
 		for(i=0;args[i].flag;i++)

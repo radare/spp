@@ -1,7 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> // only for unlink
+
+#ifdef _MSC_VER
+#include <io.h>
+static int setenv( const char *k, const char *v, int overwrite ) {
+	char buf[128];
+	sprintf(buf,"%s=%s", k, getenv(k) && (!overwrite) ? (const char *)getenv(k) : v );
+	_putenv(buf);
+	return 0;
+}
+#define popen    _popen
+#define pclose   _pclose
+#define srandom  srand
+#define snprintf _snprintf
+#endif
 
 #define VERSION "1.0"
 
