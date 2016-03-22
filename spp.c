@@ -1,4 +1,4 @@
-/* Copyleft (r) pancake (at) nopcode (dot) org */
+/* MIT (C) pancake (at) nopcode (dot) org */
 
 #include "spp.h"
 
