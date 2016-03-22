@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h> // only for unlink
 
-#define VERSION "0.1"
+#define VERSION "1.0"
 
 #define MAXIFL 128
 
