@@ -2,7 +2,7 @@ CFLAGS=-g -Wall -MD
 PREFIX?=/usr
 BINDIR=${DESTDIR}${PREFIX}/bin
 INSTALL_BIN=install -m 0755
-OBJ=spp.o
+OBJ=spp.o main.o
 ODF=$(subst .o,.d,$(OBJ))
 BIN=spp
 

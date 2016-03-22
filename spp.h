@@ -1,3 +1,6 @@
+#ifndef _INCLUDE_SPP_H_
+#define _INCLUDE_SPP_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,14 +59,14 @@ void spp_run(char *buf, FILE *out);
 void spp_eval(char *buf, FILE *out);
 void spp_io(FILE *in, FILE *out);
 
-#include "config.h"
-
-char *tag_pre, *tag_post, *token;
-int tag_begin, echo[MAXIFL];
-int ifl = 0; /* conditional nest level */
+void spp_proc_list();
+void spp_proc_list_kw();
+void spp_proc_set(struct Proc *p, char *arg, int fail);
 
 #if DEBUG
 #define D if (1)
 #else
 #define D if (0)
+#endif
+
 #endif
