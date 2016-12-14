@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "p/r_strbuf.h"
 
 #ifdef _MSC_VER

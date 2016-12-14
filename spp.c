@@ -14,34 +14,42 @@ int tag_begin, echo[MAXIFL];
 int ifl = 0; /* conditional nest level */
 
 
-void spp_run(char *buf, FILE *out) {
+void spp_run(char *buf, Output *out) {
 	int i, ret;
 	char *tok;
 
 	D fprintf(stderr, "SPP_RUN(%s)\n", buf);
 	if (proc->chop) {
-		for(;IS_SPACE(*buf);buf=buf+1);
-		for(tok = buf+strlen(buf)-1; IS_SPACE(*tok);tok=tok-1)*tok='\0';
+		for (; IS_SPACE (*buf); buf++);
+		for (tok = buf + strlen(buf) - 1; IS_SPACE (*tok); tok--) {
+			*tok='\0';
+		}
 	}
 
 	if (token) {
-		tok = strstr(buf, token);
+		tok = strstr (buf, token);
 		if (tok) {
 			*tok = '\0';
 			tok = tok + 1;
-		} else tok = buf;
-	} else tok = buf;
+		} else {
+			tok = buf;
+		}
+	} else {
+		tok = buf;
+	}
 
-	for(i=0;tags[i].callback;i++) {
-		D fprintf(stderr, "NAME=(%s)\n", tok);
-		if ((tags[i].name==NULL)||(!strcmp(buf, tags[i].name))) {
-			fflush(out);
-			ret = tags[i].callback(tok, out);
+	for(i = 0; tags[i].callback; i++) {
+		D fprintf (stderr, "NAME=(%s)\n", tok);
+		if ((tags[i].name == NULL) || (!strcmp (buf, tags[i].name))) {
+			if (out->fout) {
+				fflush (out->fout);
+			}
+			ret = tags[i].callback (tok, out);
 			if (ret) {
 				ifl += ret;
-				if (ifl<0||ifl>=MAXIFL) {
-					fprintf(stderr, "Nested conditionals parsing error.\n");
-					exit(1);
+				if (ifl < 0 || ifl >= MAXIFL) {
+					fprintf (stderr, "Nested conditionals parsing error.\n");
+					exit (1);
 				}
 			}
 			break;
@@ -52,13 +60,13 @@ void spp_run(char *buf, FILE *out) {
 /* XXX : Do not dump to temporally files!! */
 char *spp_run_str(char *buf) {
 	char b[1024];
-	FILE *fd = tmpfile();
-	spp_run(buf, fd);
-	fseek(fd, 0, SEEK_SET);
-	memset(b,'\0', 1024);
-	fread(b, 1, 1023, fd);
-	fclose(fd); // fclose removes tmpfile()
-	return strdup(b);
+	FILE *fd = tmpfile ();
+	spp_run (buf, fd);
+	fseek (fd, 0, SEEK_SET);
+	memset (b,'\0', 1024);
+	fread (b, 1, 1023, fd);
+	fclose (fd); // fclose removes tmpfile()
+	return strdup (b);
 }
 
 void lbuf_strcat(char *dst, char *src) {
@@ -75,7 +83,7 @@ void do_printf(Output *out, char *str, ...) {
 	if (out->fout) {
 		fprintf (out->fout, str, ap);
 	} else {
-		out->cout.appendf(str, ap);
+		r_strbuf_appendf(out->cout, str, ap);
 	}
 	va_end(ap);
 }
@@ -100,7 +108,7 @@ void do_fputs(Output *out, char *str) {
 	}
 }
 
-void spp_eval(char *buf, Output out) {
+void spp_eval(char *buf, Output *out) {
 	char *ptr, *ptr2;
 	char *ptrr = NULL;
 	int delta;

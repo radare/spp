@@ -1,8 +1,6 @@
 /* radare - LGPL - Copyright 2013-2014 - pancake */
 
-#include "p/r_strbuf.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "r_strbuf.h"
 
 
 RStrBuf *r_strbuf_new(const char *str) {

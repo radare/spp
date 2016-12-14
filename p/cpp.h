@@ -2,15 +2,15 @@
 
 TAG_CALLBACK(cpp_default)
 {
-	fprintf(out, "DEFAULT: (%s)\n", buf);
+	do_printf (out, "DEFAULT: (%s)\n", buf);
 	return 0;
 }
 
 TAG_CALLBACK(cpp_error)
 {
-	fprintf(out,"\n");
+	do_printf (out,"\n");
 	if (echo[ifl] && buf != NULL) {
-		fprintf(out, "ERROR: %s (line=%d)\n", buf, lineno);
+		do_printf (out, "ERROR: %s (line=%d)\n", buf, lineno);
 		exit(1);
 	}
 	return 0;
@@ -18,9 +18,9 @@ TAG_CALLBACK(cpp_error)
 
 TAG_CALLBACK(cpp_warning)
 {
-	fprintf(out,"\n");
+	do_printf (out,"\n");
 	if (echo[ifl] && buf != NULL) {
-		fprintf(out, "WARNING: line %d: %s\n", lineno, buf);
+		do_printf (out, "WARNING: line %d: %s\n", lineno, buf);
 	}
 	return 0;
 }
@@ -87,7 +87,7 @@ PUT_CALLBACK(cpp_fputs)
 				cpp_macros[i].name);
 		}
 	}
-	fprintf (out, "%s", buf);
+	do_printf (out, "%s", buf);
 	return 0;
 }
 
