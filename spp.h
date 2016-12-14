@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "p/r_strbuf.h"
 
 #ifdef _MSC_VER
 #include <io.h>
@@ -34,10 +35,16 @@ struct Tag *tags = (struct Tag *)&x##_tags; \
 struct Arg *args = (struct Arg *)&x##_args; \
 struct Proc *proc = &x##_proc;
 
+typedef struct {
+	RStrBuf *cout;
+	FILE *fout;
+	int size;
+} Output;
+
 #define ARG_CALLBACK(x) int x (char *arg)
 /* XXX swap arguments ?? */
-#define TAG_CALLBACK(x) int x (char *buf, FILE *out)
-#define PUT_CALLBACK(x) int x (FILE *out, char *buf)
+#define TAG_CALLBACK(x) int x (char *buf, Output *out)
+#define PUT_CALLBACK(x) int x (Output *out, char *buf)
 #define IS_SPACE(x) ((x==' ')||(x=='\t')||(x=='\r')||(x=='\n'))
 
 struct Tag {
@@ -67,10 +74,13 @@ struct Proc {
 	int default_echo;
 };
 
-int spp_file(const char *file, FILE *out);
-void spp_run(char *buf, FILE *out);
-void spp_eval(char *buf, FILE *out);
-void spp_io(FILE *in, FILE *out);
+
+
+int spp_file(const char *file, Output *out);
+void spp_run(char *buf, Output *out);
+void spp_eval(char *buf, Output *out);
+void spp_io(FILE *in, Output *out);
+void do_printf(Output *out, char *str, ...);
 
 void spp_proc_list();
 void spp_proc_list_kw();

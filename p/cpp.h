@@ -19,8 +19,9 @@ TAG_CALLBACK(cpp_error)
 TAG_CALLBACK(cpp_warning)
 {
 	fprintf(out,"\n");
-	if (echo[ifl] && buf != NULL)
+	if (echo[ifl] && buf != NULL) {
 		fprintf(out, "WARNING: line %d: %s\n", lineno, buf);
+	}
 	return 0;
 }
 
@@ -37,8 +38,11 @@ TAG_CALLBACK(cpp_if)
 TAG_CALLBACK(cpp_ifdef)
 {
 	char *var = getenv(buf);
-	if (var) echo[ifl+1] = 1;
-	else echo[ifl+1] = 0;
+	if (var) {
+		echo[ifl + 1] = 1;
+	} else {
+		echo[ifl + 1] = 0;
+	}
 	return 1;
 }
 
@@ -77,13 +81,13 @@ static void cpp_macro_add(char *name, char *args, char *body)
 PUT_CALLBACK(cpp_fputs)
 {
 	int i;
-	for(i=0;i<cpp_macros_n;i++) {
+	for (i = 0; i < cpp_macros_n; i++) {
 		if (strstr(buf, cpp_macros[i].name)) {
-			fprintf(stderr, "MACRO (%s) HIT\n",
+			fprintf (stderr, "MACRO (%s) HIT\n",
 				cpp_macros[i].name);
 		}
 	}
-	fprintf(out, "%s", buf);
+	fprintf (out, "%s", buf);
 	return 0;
 }
 

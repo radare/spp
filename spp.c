@@ -62,27 +62,45 @@ char *spp_run_str(char *buf) {
 }
 
 void lbuf_strcat(char *dst, char *src) {
-	int len = strlen(src);
-	if ((len+lbuf_n) > lbuf_s)
-		lbuf = realloc(lbuf, lbuf_s<<1);
-	memcpy(lbuf+lbuf_n, src, len+1);
+	int len = strlen (src);
+	if ((len + lbuf_n) > lbuf_s)
+		lbuf = realloc (lbuf, lbuf_s << 1);
+	memcpy (lbuf + lbuf_n, src, len + 1);
 	lbuf_n += len;
 }
 
-void do_fputs(FILE *out, char *str) {
-	int i;
-	for (i=0;i<=ifl;i++) {
-		if (!echo[i])
-			return;
+void do_printf(Output *out, char *str, ...) {
+	va_list ap;
+	va_start (ap, str);
+	if (out->fout) {
+		fprintf (out->fout, str, ap);
+	} else {
+		out->cout.appendf(str, ap);
 	}
-	if (str[0])
-		printed = 1;
-	if (proc->fputs)
-		proc->fputs(out, str);
-	else fprintf(out, "%s", str);
+	va_end(ap);
 }
 
-void spp_eval(char *buf, FILE *out) {
+void do_fputs(Output *out, char *str) {
+	int i;
+	for (i = 0;i <= ifl; i++) {
+		if (!echo[i]) {
+			return;
+		}
+	}
+	if (str[0]) {
+		printed = 1;
+	}
+	if (proc->fputs) {
+		proc->fputs (out, str);
+	}
+	else {
+		if (out->fout) {
+			fprintf (out->fout, "%s", str);
+		}
+	}
+}
+
+void spp_eval(char *buf, Output out) {
 	char *ptr, *ptr2;
 	char *ptrr = NULL;
 	int delta;
@@ -92,14 +110,19 @@ retry:
 	/* per word */
 	if (tag_pre == NULL) {
 		do {
-			ptr = strstr(buf, token);
-			if (ptr) *ptr='\0';
-			delta = strlen(buf)-1;
-			if (buf[delta]=='\n')
-				buf[delta]='\0';
-			if (*buf) spp_run(buf, out);
-			buf = ptr+1;
-		} while(ptr);
+			ptr = strstr (buf, token);
+			if (ptr) {
+				*ptr = '\0';
+			}
+			delta = strlen (buf) - 1;
+			if (buf[delta] == '\n') {
+				buf[delta] = '\0';
+			}
+			if (*buf) {
+				spp_run (buf, out);
+			}
+			buf = ptr + 1;
+		} while (ptr);
 		return;
 	}
 
@@ -109,20 +132,20 @@ retry:
 	}
 
 	// TODO: do it in scope!
-	delta = strlen(tag_post);
+	delta = strlen (tag_post);
 
 	/* (pre) tag */
-	ptr = strstr(buf, tag_pre);
+	ptr = strstr (buf, tag_pre);
 	if (ptr) {
-		D printf("==> 0.0 (%s)\n", ptr);
+		D printf ("==> 0.0 (%s)\n", ptr);
 		incmd = 1;
 		if (!tag_begin || (tag_begin && ptr == buf)) {
 			*ptr = '\0';
-			ptr = ptr + strlen(tag_pre);;
-			do_fputs(out, buf);
+			ptr = ptr + strlen (tag_pre);;
+			do_fputs (out, buf);
 			D printf("==> 0 (%s)\n", ptr);
 		}
-		ptrr = strstr(ptr+strlen(tag_pre), tag_pre);
+		ptr = strstr (ptr + strlen (tag_pre), tag_pre);
 	}
 
 	/* (post) tag */
@@ -195,53 +218,53 @@ retry:
 }
 
 /* TODO: detect nesting */
-void spp_io(FILE *in, FILE *out) {
+void spp_io(FILE *in, Output *out) {
 	char buf[4096];
 	int lines;
 
-	if (lbuf==NULL)
-		lbuf = malloc(4096);
+	if (lbuf == NULL)
+		lbuf = malloc (4096);
 	if (lbuf == NULL) {
-		fprintf(stderr, "Out of memory.\n");
-		exit(1);
+		fprintf (stderr, "Out of memory.\n");
+		exit (1);
 	}
 	lbuf[0]='\0';
 
 	while(!feof(in)) {
 		buf[0]='\0'; // ???
-		fgets(buf, 1023, in);
-		if (feof(in)) break;
+		fgets (buf, 1023, in);
+		if (feof (in)) break;
 		lines = 1;
-		if (!memcmp(buf, "#!", 2)) {
-			fgets(buf, 1023, in);
-			if (feof(in)) break;
+		if (!memcmp (buf, "#!", 2)) {
+			fgets (buf, 1023, in);
+			if (feof (in)) break;
 			lines++;
 		}
 		if (proc->multiline) {
-			while(1) {
-				char *eol = buf+strlen(buf) - strlen(proc->multiline);
-				if (!strcmp(eol, proc->multiline)) {
+			while (1) {
+				char *eol = buf + strlen (buf) - strlen (proc->multiline);
+				if (!strcmp (eol, proc->multiline)) {
 					D fprintf(stderr, "Multiline detected!\n");
-					fgets(eol, 1023, in);
+					fgets (eol, 1023, in);
 					if (feof(in)) break;
 					lines++;
 				} else break;
 			}
 		}
-		spp_eval(buf, out);
+		spp_eval (buf, out);
 		lineno += lines;
 	}
-	do_fputs(out, lbuf);
+	do_fputs (out, lbuf);
 }
 
-int spp_file(const char *file, FILE *out) {
-	FILE *in = fopen(file, "r");
+int spp_file(const char *file, Output *out) {
+	FILE *in = fopen (file, "r");
 	D fprintf(stderr, "SPP-FILE(%s)\n", file);
 	if (in) {
 		spp_io (in, out);
-		fclose(in);
+		fclose (in);
 		return 1;
-	} else fprintf(stderr, "Cannot find '%s'\n", file);
+	} else fprintf (stderr, "Cannot find '%s'\n", file);
 	return 0;
 }
 
