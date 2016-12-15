@@ -109,9 +109,13 @@ int main(int argc, char **argv) {
 					if (argv[i][0] == '-')
 						continue;
 					Output out;
-					out.fout = stdout;
+					out.fout = NULL;
+					out.cout = r_strbuf_new ("");
+					r_strbuf_init (out.cout);
 					spp_file (argv[i], &out);
 					dostdin = 0;
+					printf (r_strbuf_get (out.cout));
+					r_strbuf_free (out.cout);
 				}
 			}
 		}

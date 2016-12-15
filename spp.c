@@ -85,7 +85,9 @@ void do_printf(Output *out, char *str, ...) {
 	if (out->fout) {
 		vfprintf (out->fout, str, ap);
 	} else {
-		r_strbuf_appendf (out->cout, str, ap);
+		char tmp[4096];
+		int x = vsnprintf (tmp, sizeof (tmp), str, ap);
+		r_strbuf_append (out->cout, tmp);
 	}
 	va_end(ap);
 }

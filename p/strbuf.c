@@ -66,7 +66,9 @@ bool r_strbuf_setf(RStrBuf *sb, const char *fmt, ...) {
 
 int r_strbuf_append(RStrBuf *sb, const char *s) {
 	int l = strlen (s);
-	if (l<1) return false;
+	if (l < 1) {
+		return false;
+	}
 	if ((sb->len + l + 1) < sizeof (sb->buf)) {
 		memcpy (sb->buf + sb->len, s, l + 1);
 		R_FREE (sb->ptr);
@@ -103,7 +105,7 @@ int r_strbuf_appendf(RStrBuf *sb, const char *fmt, ...) {
 	va_start (ap, fmt);
 	ret = vsnprintf (string, sizeof (string), fmt, ap);
 	if (ret >= sizeof (string)) {
-		char *p = malloc (ret+2);
+		char *p = malloc (ret + 2);
 		if (!p) {
 			va_end (ap);
 			return false;
