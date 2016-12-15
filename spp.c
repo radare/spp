@@ -157,7 +157,7 @@ retry:
 			do_fputs (out, buf);
 			D printf ("==> 0 (%s)\n", ptr);
 		}
-		ptr = strstr (ptr + strlen (tag_pre), tag_pre);
+		ptrr = strstr (ptr + strlen (tag_pre), tag_pre);
 	}
 
 	/* (post) tag */
