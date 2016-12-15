@@ -33,14 +33,14 @@ static void spp_help(char *argv0) {
 int main(int argc, char **argv) {
 	int dostdin = 1;
 	int i, j;
-	Output *out;
-	out->fout = stdout;
+	Output out;
+	out.fout = stdout;
 	char *arg;
 
 	spp_proc_set (proc, argv[0], 0);
 
 	if (argc < 2)
-		spp_io (stdin, stdout);
+		spp_io (stdin, &out);
 	else {
 		for(i = 1; i < argc; i++) {
 			/* check preprocessor args */
@@ -60,9 +60,10 @@ int main(int argc, char **argv) {
 			/* TODO: Add these flags in Arg[] */
 			if (!memcmp (argv[i], "-o", 2)) {
 				GET_ARG (arg, argv, i);
-				if (arg != NULL)
-					out->fout = fopen (arg, "w");
-				if (arg == NULL || out == NULL) {
+				if (arg != NULL) {
+					out.fout = fopen (arg, "w");
+				}
+				if (arg == NULL || out.fout == NULL) {
 					fprintf (stderr, "Cannot open output file\n");
 					exit (1);
 				}
@@ -93,14 +94,14 @@ int main(int argc, char **argv) {
 			if (!strcmp (argv[i],"-s")) {
 				GET_ARG (arg, argv, i);
 				if (arg == NULL) arg = "";
-				fprintf (out->fout, "%s\n", arg);
+				fprintf (out.fout, "%s\n", arg);
 			} else
 			if (!strcmp (argv[i],"-e")) {
 				GET_ARG (arg, argv, i);
 				if (arg == NULL) {
 					arg = "";
 				}
-				spp_eval (arg, out);
+				spp_eval (arg, &out);
 			} else {
 				if (i == argc) {
 					fprintf(stderr, "No file specified.\n");
@@ -108,19 +109,20 @@ int main(int argc, char **argv) {
 					if (argv[i][0] == '-')
 						continue;
 					Output out;
-
 					out.fout = stdout;
 					spp_file (argv[i], &out);
 					dostdin = 0;
 				}
 			}
 		}
-		if (dostdin) spp_io (stdin, out);
+		if (dostdin) {
+			spp_io (stdin, &out);
+		}
 	}
 
 	if (proc->eof)
-		proc->eof ("", out);
-	fclose (out->fout);
+		proc->eof ("", &out);
+	fclose (out.fout);
 
 	return 0;
 }

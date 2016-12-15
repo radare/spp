@@ -60,12 +60,14 @@ void spp_run(char *buf, Output *out) {
 /* XXX : Do not dump to temporally files!! */
 char *spp_run_str(char *buf) {
 	char b[1024];
-	FILE *fd = tmpfile ();
-	spp_run (buf, fd);
-	fseek (fd, 0, SEEK_SET);
-	memset (b,'\0', 1024);
-	fread (b, 1, 1023, fd);
-	fclose (fd); // fclose removes tmpfile()
+	// XXX remove
+	Output out;
+	out.fout = tmpfile ();
+	spp_run (buf, &out);
+	fseek (out.fout, 0, SEEK_SET);
+	memset (out.fout,'\0', 1024);
+	fread (b, 1, 1023, out.fout);
+	fclose (out.fout); // fclose removes tmpfile()
 	return strdup (b);
 }
 
@@ -81,9 +83,9 @@ void do_printf(Output *out, char *str, ...) {
 	va_list ap;
 	va_start (ap, str);
 	if (out->fout) {
-		fprintf (out->fout, str, ap);
+		vfprintf (out->fout, str, ap);
 	} else {
-		r_strbuf_appendf(out->cout, str, ap);
+		r_strbuf_appendf (out->cout, str, ap);
 	}
 	va_end(ap);
 }
@@ -158,15 +160,17 @@ retry:
 
 	/* (post) tag */
 	if (!ptr) {
-		do_fputs(out, buf);
+		do_fputs (out, buf);
 		return;
-	} else ptr2 = strstr(ptr, tag_post);
+	} else {
+		ptr2 = strstr (ptr, tag_post);
+	}
 	if (ptr2) {
 		*ptr2 = '\0';
 		if (ptrr) {
-			if (ptrr<ptr2) {
-				char *p = strdup(ptr2+2);
-				char *s = spp_run_str(ptrr+strlen(tag_pre));
+			if (ptrr < ptr2) {
+				char *p = strdup (ptr2 + 2);
+				char *s = spp_run_str (ptrr + strlen (tag_pre));
 				D fprintf(stderr, "strcpy(%s)(%s)\n",ptrr, s);
 				strcpy(ptrr, s);
 				free(s);
