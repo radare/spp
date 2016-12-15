@@ -65,7 +65,7 @@ char *spp_run_str(char *buf) {
 	out.fout = tmpfile ();
 	spp_run (buf, &out);
 	fseek (out.fout, 0, SEEK_SET);
-	memset (out.fout,'\0', 1024);
+	memset (out.fout, '\0', 1024);
 	fread (b, 1, 1023, out.fout);
 	fclose (out.fout); // fclose removes tmpfile()
 	return strdup (b);
@@ -86,7 +86,7 @@ void do_printf(Output *out, char *str, ...) {
 		vfprintf (out->fout, str, ap);
 	} else {
 		char tmp[4096];
-		int x = vsnprintf (tmp, sizeof (tmp), str, ap);
+		vsnprintf (tmp, sizeof (tmp), str, ap);
 		r_strbuf_append (out->cout, tmp);
 	}
 	va_end(ap);
@@ -155,7 +155,7 @@ retry:
 			*ptr = '\0';
 			ptr = ptr + strlen (tag_pre);;
 			do_fputs (out, buf);
-			D printf("==> 0 (%s)\n", ptr);
+			D printf ("==> 0 (%s)\n", ptr);
 		}
 		ptr = strstr (ptr + strlen (tag_pre), tag_pre);
 	}
@@ -190,43 +190,43 @@ retry:
 		if (lbuf && lbuf[0]) {
 			D printf("==> 1 (%s)\n", lbuf);
 			if (ptr) {
-				lbuf_strcat(lbuf, buf);
-				do_fputs(out, lbuf);
-				spp_run(ptr, out);
+				lbuf_strcat (lbuf, buf);
+				do_fputs (out, lbuf);
+				spp_run (ptr, out);
 			} else {
-				lbuf_strcat(lbuf, buf);
-				D printf("=(1)=> spp_run(%s)\n", lbuf);
-				spp_run(lbuf+delta, out);
-				D printf("=(1)=> spp_run(%s)\n", lbuf);
+				lbuf_strcat (lbuf, buf);
+				D printf ("=(1)=> spp_run(%s)\n", lbuf);
+				spp_run (lbuf+delta, out);
+				D printf ("=(1)=> spp_run(%s)\n", lbuf);
 			}
 			lbuf[0]='\0';
 			lbuf_n = 0;
 		} else {
-			D printf("==> 2 (%s)\n", ptr);
+			D printf ("==> 2 (%s)\n", ptr);
 			if (ptr) {
-				D printf(" ==> 2.1: run(%s)\n", ptr);
-				spp_run(ptr, out);
-				buf = ptr2+delta;
-				if (buf[0]=='\n'&&printed) buf = buf+1;
-				D printf(" ==> 2.1: continue(%s)\n", ptr2+delta);
+				D printf (" ==> 2.1: run(%s)\n", ptr);
+				spp_run (ptr, out);
+				buf = ptr2 + delta;
+				if (buf[0] == '\n' && printed) buf++;
+				D printf (" ==> 2.1: continue(%s)\n", ptr2 + delta);
 				goto retry;
-			} else do_fputs(out, "\n");
+			} else do_fputs (out, "\n");
 		}
-		do_fputs(out, ptr2+delta);
+		do_fputs (out, ptr2+delta);
 	} else {
-		D printf("==> 3\n");
+		D printf ("==> 3\n");
 		if (ptr) {
-			lbuf_strcat(lbuf, ptr);
+			lbuf_strcat (lbuf, ptr);
 		} else {
 			if (lbuf == NULL) {
 				// XXX should never happen
-				fprintf(stderr, "syntax error?\n");
-				exit(1);
+				fprintf (stderr, "syntax error?\n");
+				exit (1);
 			}
 			if (buf[0]) {
-				if (incmd) lbuf_strcat(lbuf, buf);
-				else do_fputs(out, buf);
-			} else do_fputs(out, buf);
+				if (incmd) lbuf_strcat (lbuf, buf);
+				else do_fputs (out, buf);
+			} else do_fputs (out, buf);
 		}
 	}
 }
@@ -236,8 +236,9 @@ void spp_io(FILE *in, Output *out) {
 	char buf[4096];
 	int lines;
 
-	if (lbuf == NULL)
+	if (lbuf == NULL) {
 		lbuf = malloc (4096);
+	}
 	if (lbuf == NULL) {
 		fprintf (stderr, "Out of memory.\n");
 		exit (1);
@@ -284,7 +285,7 @@ int spp_file(const char *file, Output *out) {
 
 void spp_proc_list_kw() {
 	int i;
-	for (i=0;tags[i].name;i++)
+	for (i = 0; tags[i].name; i++)
 		printf ("%s\n", tags[i].name);
 }
 
@@ -297,16 +298,16 @@ void spp_proc_list() {
 void spp_proc_set(struct Proc *p, char *arg, int fail) {
 	int i, j;
 	if (arg)
-	for (j=0; procs[j];j++) {
+	for (j = 0; procs[j]; j++) {
 		if (!strcmp (procs[j]->name, arg)) {
 			proc = procs[j];
-			D printf("SET PROC:(%s)(%s)\n", arg, proc->name);
+			D printf ("SET PROC:(%s)(%s)\n", arg, proc->name);
 			break;
 		}
 	}
-	if (arg&&*arg&&!procs[j]&&fail) {
-		fprintf(stderr, "Invalid preprocessor name '%s'\n", arg);
-		exit(1);
+	if (arg && *arg && !procs[j] && fail) {
+		fprintf (stderr, "Invalid preprocessor name '%s'\n", arg);
+		exit (1);
 	}
 	if (proc == NULL)
 		proc = p;
@@ -315,7 +316,7 @@ void spp_proc_set(struct Proc *p, char *arg, int fail) {
 		// TODO: wtf!
 		tag_pre = proc->tag_pre;
 		tag_post = proc->tag_post;
-		for (i=0;i<MAXIFL;i++)
+		for (i = 0; i < MAXIFL; i++)
 			echo[i] = proc->default_echo;
 		token = proc->token;
 		tag_begin = proc->tag_begin;

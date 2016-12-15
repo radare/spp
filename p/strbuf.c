@@ -1,4 +1,5 @@
 /* radare - LGPL - Copyright 2013-2014 - pancake */
+#if SPP_STRBUF
 
 #include "r_strbuf.h"
 
@@ -36,32 +37,6 @@ bool r_strbuf_set(RStrBuf *sb, const char *s) {
 	}
 	sb->len = l;
 	return true;
-}
-
-bool r_strbuf_setf(RStrBuf *sb, const char *fmt, ...) {
-	int rc;
-	bool ret;
-	char string[1024];
-	va_list ap;
-
-	if (!sb || !fmt)
-		return false;
-	va_start (ap, fmt);
-	rc = vsnprintf (string, sizeof (string), fmt, ap);
-	if (rc >= sizeof (string)) {
-		char *p = malloc (rc + 2);
-		if (!p) {
-			va_end (ap);
-			return false;
-		}
-		vsnprintf (p, rc + 1, fmt, ap);
-		ret = r_strbuf_set (sb, p);
-		free (p);
-	} else {
-		ret = r_strbuf_set (sb, string);
-	}
-	va_end (ap);
-	return ret;
 }
 
 int r_strbuf_append(RStrBuf *sb, const char *s) {
@@ -124,15 +99,6 @@ char *r_strbuf_get(RStrBuf *sb) {
 	return sb? (sb->ptr? sb->ptr: sb->buf) : NULL;
 }
 
-char *r_strbuf_drain(RStrBuf *sb) {
-	char *ret = NULL;
-	if (sb) {
-		ret = sb->ptr? sb->ptr: strdup (sb->buf);
-		free (sb);
-	}
-	return ret;
-}
-
 void r_strbuf_free(RStrBuf *sb) {
 	r_strbuf_fini (sb);
 	free (sb);
@@ -142,3 +108,5 @@ void r_strbuf_fini(RStrBuf *sb) {
 	if (sb && sb->ptr)
 		R_FREE (sb->ptr);
 }
+
+#endif // SPP_STRBUF

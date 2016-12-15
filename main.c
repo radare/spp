@@ -10,8 +10,8 @@ static void spp_help(char *argv0) {
 	int i;
 	char supported[128] = "";
 	for( i = 0; procs[i]; ++i ) {
-		if( i ) strcat( supported, "," );
-		strcat( supported, procs[i]->name );
+		if (i) strcat (supported, ",");
+		strcat (supported, procs[i]->name);
 	}
 	printf("Usage: %s [-othesv] [file] [...]\n", argv0);
 	printf(	"  -o [file]     set output file (stdout)\n"
@@ -23,9 +23,10 @@ static void spp_help(char *argv0) {
 		"  -n            do not read from stdin\n"
 		"  -v            show version information\n", supported);
 	if (proc) {
-		printf("%s specific flags:\n", proc->name);
-		for(i=0; args[i].flag;i++)
-			printf(" %s   %s\n", args[i].flag, args[i].desc);
+		printf ("%s specific flags:\n", proc->name);
+		for(i = 0; args[i].flag; i++) {
+			printf (" %s   %s\n", args[i].flag, args[i].desc);
+		}
 	}
 	exit(0);
 }
@@ -61,9 +62,16 @@ int main(int argc, char **argv) {
 			if (!memcmp (argv[i], "-o", 2)) {
 				GET_ARG (arg, argv, i);
 				if (arg != NULL) {
-					out.fout = fopen (arg, "w");
+					if (!strcmp (arg, "buff")) {
+						out.fout = NULL;
+						out.cout = r_strbuf_new ("");
+						r_strbuf_init (out.cout);
+					} else {
+						out.cout = NULL;
+						out.fout = fopen (arg, "w");
+					}
 				}
-				if (arg == NULL || out.fout == NULL) {
+				if (!out.cout && (arg == NULL || out.fout == NULL)) {
 					fprintf (stderr, "Cannot open output file\n");
 					exit (1);
 				}
@@ -104,18 +112,14 @@ int main(int argc, char **argv) {
 				spp_eval (arg, &out);
 			} else {
 				if (i == argc) {
-					fprintf(stderr, "No file specified.\n");
+					fprintf (stderr, "No file specified.\n");
 				} else {
-					if (argv[i][0] == '-')
-						continue;
-					Output out;
-					out.fout = NULL;
-					out.cout = r_strbuf_new ("");
-					r_strbuf_init (out.cout);
 					spp_file (argv[i], &out);
 					dostdin = 0;
-					printf (r_strbuf_get (out.cout));
-					r_strbuf_free (out.cout);
+					if (out.cout) {
+						D printf (r_strbuf_get (out.cout));
+						r_strbuf_free (out.cout);
+					}
 				}
 			}
 		}
@@ -126,7 +130,9 @@ int main(int argc, char **argv) {
 
 	if (proc->eof)
 		proc->eof ("", &out);
-	fclose (out.fout);
+	if (out.fout) {
+		fclose (out.fout);
+	}
 
 	return 0;
 }

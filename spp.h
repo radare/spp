@@ -11,8 +11,8 @@
 #include <io.h>
 static int setenv( const char *k, const char *v, int overwrite ) {
        char buf[128];
-       sprintf(buf,"%s=%s", k, getenv(k) && (!overwrite) ? (const char *)getenv(k) : v );
-       _putenv(buf);
+       sprintf (buf,"%s=%s", k, getenv (k) && (!overwrite) ? (const char *)getenv (k) : v );
+       _putenv (buf);
        return 0;
 }
 #define popen    _popen
@@ -29,7 +29,7 @@ extern int ifl;
 extern int echo[MAXIFL];
 extern int lineno;
 
-#define GET_ARG(x,y,i) if (y[i][2]) x = y[i]+2; else x = y[++i]
+#define GET_ARG(x,y,i) if (y[i][2]) x = y[i] + 2; else x = y[++i]
 
 #define DEFAULT_PROC(x) \
 struct Tag *tags = (struct Tag *)&x##_tags; \
