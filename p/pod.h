@@ -2,28 +2,30 @@
 
 TAG_CALLBACK(pod_default)
 {
-	fprintf(out, "DEFAULT: (%s)\n", buf);
+	do_printf (out, "DEFAULT: (%s)\n", buf);
 	return 0;
 }
 
 TAG_CALLBACK(pod_cut)
 {
-	fprintf(out, "\n");
+	do_printf (out, "\n");
 	echo[ifl] = 0;
 	return 0;
 }
 
 TAG_CALLBACK(pod_head1)
 {
-	int i, len = strlen(buf);
+	int i, len = strlen (buf);
 	echo[ifl] = 1;
-	fprintf(out,"\n");
-	if (buf==NULL)
+	do_printf (out,"\n");
+	if (buf==NULL) {
 		return 0;
-	fprintf(out, "%s\n", buf);
-	for(i=0;i<len;i++)
-		fprintf(out, "%c", '=');
-	fprintf(out, "\n");
+	}
+	do_printf (out, "%s\n", buf);
+	for(i = 0; i < len; i++) {
+		do_printf (out, "%c", '=');
+	}
+	do_printf (out, "\n");
 	return 0;
 }
 

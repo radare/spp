@@ -2,15 +2,15 @@
 
 TAG_CALLBACK(cpp_default)
 {
-	fprintf(out, "DEFAULT: (%s)\n", buf);
+	do_printf (out, "DEFAULT: (%s)\n", buf);
 	return 0;
 }
 
 TAG_CALLBACK(cpp_error)
 {
-	fprintf(out,"\n");
+	do_printf (out,"\n");
 	if (echo[ifl] && buf != NULL) {
-		fprintf(out, "ERROR: %s (line=%d)\n", buf, lineno);
+		do_printf (out, "ERROR: %s (line=%d)\n", buf, lineno);
 		exit(1);
 	}
 	return 0;
@@ -18,9 +18,10 @@ TAG_CALLBACK(cpp_error)
 
 TAG_CALLBACK(cpp_warning)
 {
-	fprintf(out,"\n");
-	if (echo[ifl] && buf != NULL)
-		fprintf(out, "WARNING: line %d: %s\n", lineno, buf);
+	do_printf (out,"\n");
+	if (echo[ifl] && buf != NULL) {
+		do_printf (out, "WARNING: line %d: %s\n", lineno, buf);
+	}
 	return 0;
 }
 
@@ -37,8 +38,11 @@ TAG_CALLBACK(cpp_if)
 TAG_CALLBACK(cpp_ifdef)
 {
 	char *var = getenv(buf);
-	if (var) echo[ifl+1] = 1;
-	else echo[ifl+1] = 0;
+	if (var) {
+		echo[ifl + 1] = 1;
+	} else {
+		echo[ifl + 1] = 0;
+	}
 	return 1;
 }
 
@@ -77,13 +81,13 @@ static void cpp_macro_add(char *name, char *args, char *body)
 PUT_CALLBACK(cpp_fputs)
 {
 	int i;
-	for(i=0;i<cpp_macros_n;i++) {
+	for (i = 0; i < cpp_macros_n; i++) {
 		if (strstr(buf, cpp_macros[i].name)) {
-			fprintf(stderr, "MACRO (%s) HIT\n",
+			fprintf (stderr, "MACRO (%s) HIT\n",
 				cpp_macros[i].name);
 		}
 	}
-	fprintf(out, "%s", buf);
+	do_printf (out, "%s", buf);
 	return 0;
 }
 

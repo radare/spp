@@ -29,7 +29,7 @@ static char *cmd_to_str(const char *cmd)
 			outlen += 4096;
 			out = realloc (out, outlen);
 		}
-	} 
+	}
 	out[len]='\0';
 	return out;
 }
@@ -51,8 +51,8 @@ TAG_CALLBACK(spp_set)
 		*eq = '\0';
 		val = eq + 1;
 	}
-	if (spp_var_set(buf, val)==-1)
-		fprintf(stderr, "Invalid variable name '%s' at line %d\n", buf, lineno);
+	if (spp_var_set (buf, val) == -1)
+		fprintf (stderr, "Invalid variable name '%s' at line %d\n", buf, lineno);
 	return 0;
 }
 
@@ -61,7 +61,9 @@ TAG_CALLBACK(spp_get)
 	char *var;
 	if (!echo[ifl]) return 0;
 	var = spp_var_get(buf);
-	if (var) fprintf(out, "%s", var);
+	if (var) {
+		do_printf (out, "%s", var);
+	}
 	return 0;
 }
 
@@ -72,24 +74,24 @@ TAG_CALLBACK(spp_getrandom)
 	srandom(getpid()); // TODO: change this to be portable
 	max = atoi(buf);
 	max = (int)(rand()%max);
-	fprintf(out, "%d", max);
+	do_printf(out, "%d", max);
 	return 0;
 }
 
 TAG_CALLBACK(spp_add)
 {
 	char res[32];
-	char *var, *eq = strchr(buf, ' ');
+	char *var, *eq = strchr (buf, ' ');
 	int ret = 0;
 	if (!echo[ifl]) return 0;
 	if (eq) {
 		*eq = '\0';
-		var = spp_var_get(buf);
+		var = spp_var_get (buf);
 		if (var != NULL)
-			ret = atoi(var);
-		ret += atoi(eq+1);
-		sprintf(res, "%d", ret);
-		setenv(buf, res, 1);
+			ret = atoi (var);
+		ret += atoi (eq + 1);
+		sprintf (res, "%d", ret);
+		setenv (buf, res, 1);
 	} else { /* syntax error */ }
 	return 0;
 }
@@ -125,7 +127,7 @@ TAG_CALLBACK(spp_trace)
 TAG_CALLBACK(spp_echo)
 {
 	if (!echo[ifl]) return 0;
-	fprintf(out, "%s", buf);
+	do_printf (out, "%s", buf);
 	// TODO: add variable replacement here?? not necessary, done by {{get}}
 	return 0;
 }
@@ -143,7 +145,7 @@ TAG_CALLBACK(spp_system)
 	char *str;
 	if (!echo[ifl]) return 0;
 	str = cmd_to_str(buf);
-	fprintf(out, "%s", str);
+	do_printf (out, "%s", str);
 	free(str);
 	return 0;
 }
@@ -197,16 +199,16 @@ TAG_CALLBACK(spp_ifeq)
 TAG_CALLBACK(spp_hex)
 {
 	int i;
-	for(i=0;buf[i];i++) {
-		if (buf[i]>='0'&&buf[i]<='9') {
+	for(i = 0; buf[i]; i++) {
+		if (buf[i] >= '0' && buf[i] <= '9') {
 			int b;
 			unsigned int ch;
-			b = buf[i+2];
-			buf[i+2]='\0';
-			sscanf(buf+i, "%02x", &ch);
-			fprintf(out, "%c", ch);
-			buf[i+2]=b;
-			buf=buf+2;
+			b = buf[i + 2];
+			buf[i + 2] = '\0';
+			sscanf(buf + i, "%02x", &ch);
+			do_printf (out, "%c", ch);
+			buf[i + 2] = b;
+			buf = buf + 2;
 		}
 	}
 	return 0;
@@ -222,14 +224,14 @@ TAG_CALLBACK(spp_grepline)
 	if (!echo[ifl]) return 1;
 	ptr = strchr(buf, ' ');
 	if (ptr) {
-		*ptr='\0';
-		fd = fopen(buf, "r");
-		line = atoi(ptr+1);
+		*ptr= '\0';
+		fd = fopen (buf, "r");
+		line = atoi (ptr+1);
 		if (fd) {
-			while(!feof(fd) && line--)
+			while (!feof (fd) && line--)
 				fgets(b, 1023, fd);
-			fclose(fd);
-			fprintf(out, "%s", b);
+			fclose (fd);
+			do_printf (out, "%s", b);
 		} else {
 			fprintf(stderr, "Unable to open '%s'\n", buf);
 		}
@@ -239,14 +241,14 @@ TAG_CALLBACK(spp_grepline)
 
 TAG_CALLBACK(spp_else)
 {
-	echo[ifl] = echo[ifl]?0:1;
+	echo[ifl] = echo[ifl] ? 0 : 1;
 	return 0;
 }
 
 TAG_CALLBACK(spp_ifnot)
 {
-	spp_if(buf, out);
-	spp_else(buf, out);
+	spp_if (buf, out);
+	spp_else (buf, out);
 	return 1;
 }
 
@@ -254,13 +256,13 @@ TAG_CALLBACK(spp_ifin)
 {
 	char *var, *ptr;
 	if (!echo[ifl]) return 1;
-	ptr = strchr(buf, ' ');
-	echo[ifl+1] = 0;
+	ptr = strchr (buf, ' ');
+	echo[ifl + 1] = 0;
 	if (ptr) {
 		*ptr='\0';
 		var = getenv(buf);
-		if (strstr(ptr+1, var)) {
-			echo[ifl+1] = 1;
+		if (strstr (ptr + 1, var)) {
+			echo[ifl + 1] = 1;
 		}
 	}
 	return 1;
@@ -274,8 +276,8 @@ TAG_CALLBACK(spp_endif)
 TAG_CALLBACK(spp_default)
 {
 	if (!echo[ifl]) return 0;
-	if (buf[-1]!=';') /* commented tag */
-		fprintf(stderr, "WARNING: invalid command(%s) at line %d\n", buf, lineno);
+	if (buf[-1] != ';') /* commented tag */
+		fprintf (stderr, "WARNING: invalid command(%s) at line %d\n", buf, lineno);
 	return 0;
 }
 
@@ -283,7 +285,7 @@ static FILE *spp_pipe_fd = NULL;
 
 TAG_CALLBACK(spp_pipe)
 {
-	spp_pipe_fd = popen(buf, "w");
+	spp_pipe_fd = popen (buf, "w");
 	return 0;
 }
 
@@ -291,22 +293,22 @@ static char *spp_switch_str = NULL;
 
 TAG_CALLBACK(spp_switch)
 {
-	char *var = spp_var_get(buf);
+	char *var = spp_var_get (buf);
 	if (var)
-		spp_switch_str = strdup(var);
-	else spp_switch_str = strdup("");
+		spp_switch_str = strdup (var);
+	else spp_switch_str = strdup ("");
 	return 1;
 }
 
 TAG_CALLBACK(spp_case)
 {
-	echo[ifl] = strcmp(buf, spp_switch_str)?0:1;
+	echo[ifl] = strcmp (buf, spp_switch_str)?0:1;
 	return 0;
 }
 
 TAG_CALLBACK(spp_endswitch)
 {
-	free(spp_switch_str);
+	free (spp_switch_str);
 	spp_switch_str = NULL;
 	return -1;
 }
@@ -314,21 +316,22 @@ TAG_CALLBACK(spp_endswitch)
 TAG_CALLBACK(spp_endpipe)
 {
 	/* TODO: Get output here */
-	int ret=0, len = 0;
+	int ret = 0, len = 0;
 	int outlen = 4096;
-	char *str = (char *)malloc(4096);
+	char *str = (char *)malloc (4096);
 	do {
 		len += ret;
-		ret = fread(str+len, 1, 1023, spp_pipe_fd);
-		if (ret+1024>outlen) {
+		ret = fread (str + len, 1, 1023, spp_pipe_fd);
+		if (ret + 1024 > outlen) {
 			outlen += 4096;
 			str = realloc (str, outlen);
 		}
-	} while (ret>0);
-	str[len]='\0';
-	fprintf(out, "%s", str);
-	if (spp_pipe_fd)
-		pclose(spp_pipe_fd);
+	} while (ret > 0);
+	str[len] = '\0';
+	do_printf (out, "%s", str);
+	if (spp_pipe_fd) {
+		pclose (spp_pipe_fd);
+	}
 	spp_pipe_fd = NULL;
 	return 0;
 }
@@ -336,8 +339,10 @@ TAG_CALLBACK(spp_endpipe)
 PUT_CALLBACK(spp_fputs)
 {
 	if (spp_pipe_fd) {
-		fprintf(spp_pipe_fd, "%s", buf);
-	} else fprintf(out, "%s", buf);
+		fprintf (spp_pipe_fd, "%s", buf);
+	} else {
+		do_printf (out, "%s", buf);
+	}
 	return 0;
 }
 
@@ -371,18 +376,18 @@ struct Tag spp_tags[] = {
 
 ARG_CALLBACK(spp_arg_i)
 {
-	setenv("SPP_INCDIR", arg, 1);
+	setenv ("SPP_INCDIR", arg, 1);
 	return 0;
 }
 
 ARG_CALLBACK(spp_arg_d)
 {
 	/* TODO: Handle error */
-	char *eq = strchr(arg, '=');
+	char *eq = strchr (arg, '=');
 	if (eq) {
 		*eq = '\0';
-		spp_var_set(arg, eq+1);
-	} else spp_var_set(arg, "");
+		spp_var_set (arg, eq+1);
+	} else spp_var_set (arg, "");
 	return 0;
 }
 

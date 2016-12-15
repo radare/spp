@@ -9,9 +9,9 @@ static char *input = NULL;
 
 TAG_CALLBACK(sh_default)
 {
-	if (out != stdout) {
+	//if (out != stdout) {
 		// pipe stdout to out fd
-	}
+	//}
 #if 0
 	ptr = strstr(buf, "<<");
 	if (ptr) {
@@ -23,7 +23,7 @@ TAG_CALLBACK(sh_default)
 	}
 
 	// printf("system(%s)\n", buf);
-	if (eof)	
+	if (eof)
 #endif
 	system(buf);
 	return 0;
@@ -52,9 +52,11 @@ PUT_CALLBACK(sh_fputs)
 {
 	if (sh_pipe_enabled) {
 		char str[1024]; // XXX
-		sprintf(str, "echo '%s' | %s", buf, sh_pipe_cmd); // XXX
-		system(str);
-	} else fprintf(out, "%s", buf);
+		sprintf (str, "echo '%s' | %s", buf, sh_pipe_cmd); // XXX
+		system (str);
+	} else {
+		do_printf (out, "%s", buf);
+	}
 	return 0;
 }
 
