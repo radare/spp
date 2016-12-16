@@ -11,7 +11,7 @@ TAG_CALLBACK(cpp_error)
 	do_printf (out,"\n");
 	if (echo[ifl] && buf != NULL) {
 		do_printf (out, "ERROR: %s (line=%d)\n", buf, lineno);
-		exit(1);
+		return 1;
 	}
 	return 0;
 }
@@ -103,7 +103,7 @@ TAG_CALLBACK(cpp_define)
 			ptr = strchr(macro+1, ')');
 			if (ptr==NULL) {
 				fprintf(stderr, "Invalid syntax\n");
-				exit(1);
+				return 1;
 			}
 			ptr = ptr + 1;
 			fprintf(stderr, "REGISTER MACRO:\n");
@@ -125,7 +125,9 @@ TAG_CALLBACK(cpp_endif)
 
 TAG_CALLBACK(cpp_include)
 {
-	if (echo[ifl]) spp_file(buf, out);
+	if (echo[ifl]) {
+		spp_file (buf, out);
+	}
 	return 0;
 }
 
