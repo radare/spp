@@ -5,7 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#if SPP_STRBUF
 #include "p/r_strbuf.h"
+#else
+#include <r_util.h>
+#endif
 
 #ifdef _MSC_VER
 #include <io.h>

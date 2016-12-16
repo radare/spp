@@ -1,12 +1,14 @@
 TAG_CALLBACK(asm_default)
 {
+	do_printf (out, "DEFAULT: (%s)\n", buf);
         return 0;
 }
 
 TAG_CALLBACK(asm_include)
 {
-	printf("include asm\n");
-	if (echo[ifl]) spp_file(buf, out);
+	if (echo[ifl]) {
+		spp_file(buf, out);
+	}
 	return 0;
 }
 
@@ -18,7 +20,7 @@ PUT_CALLBACK(asm_fputs)
 }
 
 struct Tag asm_tags[] = {
-	{ "inc", asm_include },
+	{ "include", asm_include },
 	{ NULL, asm_default },
 	{ NULL }
 };
