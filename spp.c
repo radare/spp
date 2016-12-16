@@ -37,8 +37,7 @@ void spp_run(char *buf, Output *out) {
 	} else {
 		tok = buf;
 	}
-
-	for(i = 0; tags[i].callback; i++) {
+	for (i = 0; tags[i].callback; i++) {
 		D fprintf (stderr, "NAME=(%s)\n", tok);
 		if ((tags[i].name == NULL) || (!strcmp (buf, tags[i].name))) {
 			if (out->fout) {
@@ -49,7 +48,7 @@ void spp_run(char *buf, Output *out) {
 				ifl += ret;
 				if (ifl < 0 || ifl >= MAXIFL) {
 					fprintf (stderr, "Nested conditionals parsing error.\n");
-					exit (1);
+					return;
 				}
 			}
 			break;
@@ -59,16 +58,14 @@ void spp_run(char *buf, Output *out) {
 
 /* XXX : Do not dump to temporally files!! */
 char *spp_run_str(char *buf) {
-	char b[1024];
-	// XXX remove
-	Output out;
-	out.fout = tmpfile ();
-	spp_run (buf, &out);
-	fseek (out.fout, 0, SEEK_SET);
-	memset (out.fout, '\0', 1024);
-	fread (b, 1, 1023, out.fout);
-	fclose (out.fout); // fclose removes tmpfile()
-	return strdup (b);
+	char *b;
+	Output tmp;
+	tmp.fout = NULL;
+	tmp.cout = r_strbuf_new("");
+	spp_run (buf, &tmp);
+	b = strndup (r_strbuf_get (tmp.cout), 1024);
+	r_strbuf_free (tmp.cout);
+	return b;
 }
 
 void lbuf_strcat(char *dst, char *src) {
@@ -207,12 +204,16 @@ retry:
 				D printf (" ==> 2.1: run(%s)\n", ptr);
 				spp_run (ptr, out);
 				buf = ptr2 + delta;
-				if (buf[0] == '\n' && printed) buf++;
+				if (buf[0] == '\n' && printed) {
+					buf++;
+				}
 				D printf (" ==> 2.1: continue(%s)\n", ptr2 + delta);
 				goto retry;
-			} else do_fputs (out, "\n");
+			} else {
+				do_fputs (out, "\n");
+			}
 		}
-		do_fputs (out, ptr2+delta);
+		do_fputs (out, ptr2 + delta);
 	} else {
 		D printf ("==> 3\n");
 		if (ptr) {
@@ -221,12 +222,18 @@ retry:
 			if (lbuf == NULL) {
 				// XXX should never happen
 				fprintf (stderr, "syntax error?\n");
-				exit (1);
+				return;
 			}
 			if (buf[0]) {
-				if (incmd) lbuf_strcat (lbuf, buf);
-				else do_fputs (out, buf);
-			} else do_fputs (out, buf);
+				if (incmd) {
+					lbuf_strcat (lbuf, buf);
+				}
+				else {
+					do_fputs (out, buf);
+				}
+			} else {
+				do_fputs (out, buf);
+			}
 		}
 	}
 }
@@ -235,16 +242,14 @@ retry:
 void spp_io(FILE *in, Output *out) {
 	char buf[4096];
 	int lines;
-
 	if (lbuf == NULL) {
 		lbuf = malloc (4096);
 	}
 	if (lbuf == NULL) {
 		fprintf (stderr, "Out of memory.\n");
-		exit (1);
+		return;
 	}
 	lbuf[0]='\0';
-
 	while(!feof(in)) {
 		buf[0]='\0'; // ???
 		fgets (buf, 1023, in);
@@ -291,8 +296,9 @@ void spp_proc_list_kw() {
 
 void spp_proc_list() {
 	int i;
-	for (i=0;procs[i];i++)
+	for (i=0;procs[i];i++) {
 		printf ("%s\n", procs[i]->name);
+	}
 }
 
 void spp_proc_set(struct Proc *p, char *arg, int fail) {
@@ -307,7 +313,7 @@ void spp_proc_set(struct Proc *p, char *arg, int fail) {
 	}
 	if (arg && *arg && !procs[j] && fail) {
 		fprintf (stderr, "Invalid preprocessor name '%s'\n", arg);
-		exit (1);
+		return;
 	}
 	if (proc == NULL)
 		proc = p;

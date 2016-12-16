@@ -5,7 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#if SPP_STRBUF
 #include "p/r_strbuf.h"
+#else
+#include <r_util.h>
+#endif
 
 #ifdef _MSC_VER
 #include <io.h>
@@ -81,7 +85,7 @@ int spp_file(const char *file, Output *out);
 void spp_run(char *buf, Output *out);
 void spp_eval(char *buf, Output *out);
 void spp_io(FILE *in, Output *out);
-void do_printf(Output *out, char *str, ...);
+void do_printf(Output *out, char *str, ...) __attribute__ ((format (printf, 2, 3)));
 
 void spp_proc_list();
 void spp_proc_list_kw();

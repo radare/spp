@@ -3,6 +3,7 @@
 #include "p/acr.h"
 #include "p/pod.h"
 #include "p/cpp.h"
+#include "p/asm.h"
 
 struct Proc *procs[] = {
 	&spp_proc,
@@ -10,6 +11,7 @@ struct Proc *procs[] = {
 	&pod_proc,
 	&acr_proc,
 	&sh_proc,
+	&asm_proc,
 	NULL
 };
 

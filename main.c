@@ -116,8 +116,9 @@ int main(int argc, char **argv) {
 				} else {
 					spp_file (argv[i], &out);
 					dostdin = 0;
+
 					if (out.cout) {
-						D printf (r_strbuf_get (out.cout));
+						D printf ("%s\n", r_strbuf_get (out.cout));
 						r_strbuf_free (out.cout);
 					}
 				}

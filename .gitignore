@@ -1,3 +1,7 @@
+*.d
+*.o
+spp
+.gitignore
 out.php
 test.php
 config.h
