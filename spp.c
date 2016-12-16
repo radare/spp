@@ -59,16 +59,14 @@ void spp_run(char *buf, Output *out) {
 
 /* XXX : Do not dump to temporally files!! */
 char *spp_run_str(char *buf) {
-	char b[1024];
-	// XXX remove
-	Output out;
-	out.fout = tmpfile ();
-	spp_run (buf, &out);
-	fseek (out.fout, 0, SEEK_SET);
-	memset (out.fout, '\0', 1024);
-	fread (b, 1, 1023, out.fout);
-	fclose (out.fout); // fclose removes tmpfile()
-	return strdup (b);
+	char *b;
+	Output tmp;
+	tmp.fout = NULL;
+	tmp.cout = r_strbuf_new("");
+	spp_run (buf, &tmp);
+	b = strndup (r_strbuf_get (tmp.cout), 1024);
+	r_strbuf_free (tmp.cout);
+	return b;
 }
 
 void lbuf_strcat(char *dst, char *src) {
@@ -278,6 +276,7 @@ int spp_file(const char *file, Output *out) {
 	if (in) {
 		spp_io (in, out);
 		fclose (in);
+		printf ("wut?\n");
 		return 1;
 	} else fprintf (stderr, "Cannot find '%s'\n", file);
 	return 0;

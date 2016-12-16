@@ -111,13 +111,18 @@ int main(int argc, char **argv) {
 				}
 				spp_eval (arg, &out);
 			} else {
+				printf ("rrrrr\n");
 				if (i == argc) {
 					fprintf (stderr, "No file specified.\n");
 				} else {
+					printf ("tttt2\n");
 					spp_file (argv[i], &out);
+					printf ("tttt\n");
 					dostdin = 0;
+
 					if (out.cout) {
-						D printf (r_strbuf_get (out.cout));
+						printf ("--------------\n");
+						printf ("%s\n", r_strbuf_get (out.cout));
 						r_strbuf_free (out.cout);
 					}
 				}
