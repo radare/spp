@@ -71,7 +71,7 @@ TAG_CALLBACK(spp_getrandom)
 {
 	int max;
 	if (!echo[ifl]) return 0;
-	srandom(getpid()); // TODO: change this to be portable
+	srandom (getpid()); // TODO: change this to be portable
 	max = atoi(buf);
 	max = (int)(rand()%max);
 	do_printf(out, "%d", max);
