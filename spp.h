@@ -5,20 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#if SPP_STRBUF
+#if NO_UTIL
 #include "p/r_strbuf.h"
+int r_sys_setenv(const char *key, const char *value);
 #else
 #include <r_util.h>
 #endif
 
-#ifdef _MSC_VER
+#ifdef __WINDOWS__
 #include <io.h>
-static int setenv( const char *k, const char *v, int overwrite ) {
-       char buf[128];
-       sprintf (buf,"%s=%s", k, getenv (k) && (!overwrite) ? (const char *)getenv (k) : v );
-       _putenv (buf);
-       return 0;
-}
 #define popen    _popen
 #define pclose   _pclose
 #define srandom  srand
