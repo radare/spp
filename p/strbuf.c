@@ -1,5 +1,5 @@
 /* radare - LGPL - Copyright 2013-2014 - pancake */
-#if SPP_STRBUF
+#if NO_UTIL
 
 #include "r_strbuf.h"
 
@@ -86,4 +86,4 @@ void r_strbuf_fini(RStrBuf *sb) {
 		R_FREE (sb->ptr);
 }
 
-#endif // SPP_STRBUF
+#endif // NO_UTIL

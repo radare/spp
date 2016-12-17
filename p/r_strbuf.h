@@ -1,4 +1,4 @@
-#if SPP_STRBUF
+#if NO_UTIL
 
 #ifndef R_STRBUF_H
 #define R_STRBUF_H
@@ -29,4 +29,4 @@ void r_strbuf_fini(RStrBuf *sb);
 void r_strbuf_init(RStrBuf *sb);
 #endif //  R_STRBUF_H
 
-#endif // SPP_STRBUF
+#endif // NO_UTIL

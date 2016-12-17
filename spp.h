@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#if SPP_STRBUF
+#if NO_UTIL
 #include "p/r_strbuf.h"
+int r_sys_setenv(const char *key, const char *value);
 #else
 #include <r_util.h>
 #endif

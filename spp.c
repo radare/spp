@@ -63,7 +63,7 @@ char *spp_run_str(char *buf) {
 	tmp.fout = NULL;
 	tmp.cout = r_strbuf_new("");
 	spp_run (buf, &tmp);
-	b = strndup (r_strbuf_get (tmp.cout), 1024);
+	b = strdup (r_strbuf_get (tmp.cout));
 	r_strbuf_free (tmp.cout);
 	return b;
 }
@@ -88,6 +88,27 @@ void do_printf(Output *out, char *str, ...) {
 	}
 	va_end(ap);
 }
+
+#if NO_UTIL
+int r_sys_setenv(const char *key, const char *value) {
+#if __UNIX__ || __CYGWIN__ && !defined(MINGW32)
+    if (!key) {
+        return 0;
+    }
+    if (!value) {
+        unsetenv (key);
+        return 0;
+    }
+    return setenv (key, value, 1);
+#elif __WINDOWS__
+    SetEnvironmentVariable (key, (LPSTR)value);
+    return 0; // TODO. get ret
+#else
+#warning r_sys_setenv : unimplemented for this platform
+    return 0;
+#endif
+}
+#endif
 
 void do_fputs(Output *out, char *str) {
 	int i;

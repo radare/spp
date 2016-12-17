@@ -27,17 +27,17 @@ TAG_CALLBACK(cpp_warning)
 
 TAG_CALLBACK(cpp_if)
 {
-	char *var = getenv(buf+((*buf=='!')?1:0));
+	char *var = getenv (buf + ((*buf == '!') ? 1 : 0));
 	if (var && *var=='1')
-		echo[ifl+1] = 1;
-	else echo[ifl+1] = 0;
+		echo[ifl + 1] = 1;
+	else echo[ifl + 1] = 0;
 	if (*buf=='!') echo[ifl+1] = !!!echo[ifl+1];
 	return 1;
 }
 
 TAG_CALLBACK(cpp_ifdef)
 {
-	char *var = getenv(buf);
+	char *var = getenv (buf);
 	if (var) {
 		echo[ifl + 1] = 1;
 	} else {
@@ -113,8 +113,8 @@ TAG_CALLBACK(cpp_define)
 			cpp_macro_add(buf,macro,ptr+1);
 			/* TODO: Name is "BUF(". for funny strstr */
 		}
-		setenv(buf, ptr, 1);
-	} else setenv(buf, "", 1);
+		r_sys_setenv (buf, ptr);
+	} else r_sys_setenv (buf, "");
 	return 0;
 }
 
@@ -155,12 +155,12 @@ ARG_CALLBACK(cpp_arg_i)
 
 ARG_CALLBACK(cpp_arg_d)
 {
-	// TODO: handle setenv==-1
+	// TODO: handle r_sys_setenv==-1
 	char *eq = strchr(arg, '=');
 	if (eq) {
 		*eq = '\0';
-		setenv(arg, eq+1, 1);
-	} else setenv(arg, "", 1);
+		r_sys_setenv (arg, eq + 1);
+	} else r_sys_setenv (arg, "");
 	return 0;
 }
 

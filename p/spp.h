@@ -9,7 +9,7 @@ static char *spp_var_get(char *var)
 static int spp_var_set(const char *var, const char *val)
 {
 //	fprintf(stderr, "SET(%s)(%s)\n", var, val);
-	return setenv(var, val, 1);
+	return r_sys_setenv(var, val);
 }
 
 /* Should be dynamic buffer */
@@ -91,7 +91,7 @@ TAG_CALLBACK(spp_add)
 			ret = atoi (var);
 		ret += atoi (eq + 1);
 		sprintf (res, "%d", ret);
-		setenv (buf, res, 1);
+		r_sys_setenv (buf, res);
 	} else { /* syntax error */ }
 	return 0;
 }
@@ -108,7 +108,7 @@ TAG_CALLBACK(spp_sub)
 		if (var == NULL) ret = 0;
 		else ret = atoi(var);
 		ret -= atoi(eq+1);
-		setenv(buf, eq+1, 1);
+		r_sys_setenv(buf, eq + 1);
 	} else { /* syntax error */ }
 	return 0;
 }
@@ -376,7 +376,7 @@ struct Tag spp_tags[] = {
 
 ARG_CALLBACK(spp_arg_i)
 {
-	setenv ("SPP_INCDIR", arg, 1);
+	r_sys_setenv ("SPP_INCDIR", arg);
 	return 0;
 }
 
