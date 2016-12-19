@@ -149,7 +149,7 @@ TAG_CALLBACK(spp_warning)
 	if (!echo[ifl]) {
 		return 0;
 	}
-	fprintf (stderr, "ERROR: %s (line=%d)\n", buf, lineno);
+	fprintf (stderr, "WARNING: %s (line=%d)\n", buf, lineno);
 	return 0;
 }
 
