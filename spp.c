@@ -1,18 +1,20 @@
-/* MIT (C) pancake (at) nopcode (dot) org */
+/* MIT (C) pancake (at) nopcode (dot) org - 2009-2016 */
 
 #include "spp.h"
 #include "config.h"
 
-char *lbuf = NULL;
-int lbuf_s = 1024;
-int lbuf_n = 0;
-int incmd = 0;
+// TODO: avoid globals
+
+static char *lbuf = NULL;
+static int lbuf_s = 1024;
+static int lbuf_n = 0;
+static int incmd = 0;
+static int printed = 0;
+static char *tag_pre, *tag_post, *token;
+
 int lineno = 1;
-int printed = 0;
-char *tag_pre, *tag_post, *token;
 int tag_begin, echo[MAXIFL];
 int ifl = 0; /* conditional nest level */
-
 
 void spp_run(char *buf, Output *out) {
 	int i, ret;
@@ -61,7 +63,7 @@ char *spp_run_str(char *buf) {
 	char *b;
 	Output tmp;
 	tmp.fout = NULL;
-	tmp.cout = r_strbuf_new("");
+	tmp.cout = r_strbuf_new ("");
 	spp_run (buf, &tmp);
 	b = strdup (r_strbuf_get (tmp.cout));
 	r_strbuf_free (tmp.cout);
@@ -70,8 +72,9 @@ char *spp_run_str(char *buf) {
 
 void lbuf_strcat(char *dst, char *src) {
 	int len = strlen (src);
-	if ((len + lbuf_n) > lbuf_s)
+	if (!lbuf || (len + lbuf_n) > lbuf_s) {
 		lbuf = realloc (lbuf, lbuf_s << 1);
+	}
 	memcpy (lbuf + lbuf_n, src, len + 1);
 	lbuf_n += len;
 }
@@ -91,7 +94,7 @@ void do_printf(Output *out, char *str, ...) {
 
 void do_fputs(Output *out, char *str) {
 	int i;
-	for (i = 0;i <= ifl; i++) {
+	for (i = 0; i <= ifl; i++) {
 		if (!echo[i]) {
 			return;
 		}
@@ -101,8 +104,7 @@ void do_fputs(Output *out, char *str) {
 	}
 	if (proc->fputs) {
 		proc->fputs (out, str);
-	}
-	else {
+	} else {
 		if (out->fout) {
 			fprintf (out->fout, "%s", str);
 		}
@@ -135,7 +137,7 @@ retry:
 		return;
 	}
 
-	if (tag_post == NULL) {
+	if (!tag_post) {
 		/* handle per line here ? */
 		return;
 	}
@@ -161,9 +163,8 @@ retry:
 	if (!ptr) {
 		do_fputs (out, buf);
 		return;
-	} else {
-		ptr2 = strstr (ptr, tag_post);
 	}
+	ptr2 = strstr (ptr, tag_post);
 	if (ptr2) {
 		*ptr2 = '\0';
 		if (ptrr) {
