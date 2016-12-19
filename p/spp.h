@@ -1,52 +1,51 @@
 /* Mini MCMS :: renamed to 'spp'? */
 
-static char *spp_var_get(char *var)
-{
-//	fprintf(stderr, "GET(%s)\n", var);
+#include <unistd.h>
+
+static char *spp_var_get(char *var) {
 	return getenv(var);
 }
 
-static int spp_var_set(const char *var, const char *val)
-{
-//	fprintf(stderr, "SET(%s)(%s)\n", var, val);
+static int spp_var_set(const char *var, const char *val) {
 	return r_sys_setenv(var, val);
 }
 
 /* Should be dynamic buffer */
-static char *cmd_to_str(const char *cmd)
-{
-	char *out = (char *)malloc(4096);
+static char *cmd_to_str(const char *cmd) {
+	char *out = (char *)calloc (4096, 0);
 	int ret = 0, len = 0, outlen = 4096;
-	FILE *fd = popen(cmd, "r");
-	while(fd) {
+	FILE *fd = popen (cmd, "r");
+	while (fd) {
 		len += ret;
-		ret = fread(out+len, 1, 1023, fd);
-		if (ret<1) {
-			pclose(fd);
+		ret = fread (out + len, 1, 1023, fd);
+		if (ret < 1) {
+			pclose (fd);
 			fd = NULL;
 		}
-		if (ret+1024>outlen) {
+		if (ret + 1024 > outlen) {
 			outlen += 4096;
 			out = realloc (out, outlen);
 		}
 	}
-	out[len]='\0';
+	out[len] = '\0';
 	return out;
 }
 
 TAG_CALLBACK(spp_set)
 {
 	char *eq, *val = "";
-	if (!echo[ifl]) return 0;
-	for(eq=buf;eq[0];eq++) {
-		switch(eq[0]) {
+	if (!echo[ifl]) {
+		return 0;
+	}
+	for (eq=buf; eq[0]; eq++) {
+		switch (eq[0]) {
 		case '-':
 		case '.':
-			eq[0]='_';
+			eq[0] = '_';
 			break;
 		}
 	}
-	eq = strchr(buf, ' ');
+	eq = strchr (buf, ' ');
 	if (eq) {
 		*eq = '\0';
 		val = eq + 1;
@@ -59,8 +58,10 @@ TAG_CALLBACK(spp_set)
 TAG_CALLBACK(spp_get)
 {
 	char *var;
-	if (!echo[ifl]) return 0;
-	var = spp_var_get(buf);
+	if (!echo[ifl]) {
+		return 0;
+	}
+	var = spp_var_get (buf);
 	if (var) {
 		do_printf (out, "%s", var);
 	}
@@ -70,11 +71,13 @@ TAG_CALLBACK(spp_get)
 TAG_CALLBACK(spp_getrandom)
 {
 	int max;
-	if (!echo[ifl]) return 0;
+	if (!echo[ifl]) {
+		return 0;
+	}
 	srandom (getpid()); // TODO: change this to be portable
-	max = atoi(buf);
+	max = atoi (buf);
 	max = (int)(rand()%max);
-	do_printf(out, "%d", max);
+	do_printf (out, "%d", max);
 	return 0;
 }
 

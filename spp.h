@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#if NO_UTIL
-#include "p/r_strbuf.h"
-int r_sys_setenv(const char *key, const char *value);
-#else
+#if HAVE_R_UTIL
 #include <r_util.h>
+#else
+#include "r_api.h"
+int r_sys_setenv(const char *key, const char *value);
 #endif
 
 #ifdef __WINDOWS__
