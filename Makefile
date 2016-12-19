@@ -5,6 +5,8 @@ OBJ=spp.o main.o r_api.o
 ODF=$(subst .o,.d,$(OBJ))
 BIN=spp
 
+CFLAGS?=-Wall -O2
+
 all: ${BIN}
 
 config.h:

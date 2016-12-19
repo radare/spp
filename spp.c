@@ -17,7 +17,7 @@ int tag_begin, echo[MAXIFL];
 int ifl = 0; /* conditional nest level */
 
 int spp_run(char *buf, Output *out) {
-	int i, ret;
+	int i, ret = 0;
 	char *tok;
 
 	D fprintf (stderr, "SPP_RUN(%s)\n", buf);
