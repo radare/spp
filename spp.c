@@ -16,7 +16,7 @@ int lineno = 1;
 int tag_begin, echo[MAXIFL];
 int ifl = 0; /* conditional nest level */
 
-void spp_run(char *buf, Output *out) {
+int spp_run(char *buf, Output *out) {
 	int i, ret;
 	char *tok;
 
@@ -41,32 +41,38 @@ void spp_run(char *buf, Output *out) {
 	}
 	for (i = 0; tags[i].callback; i++) {
 		D fprintf (stderr, "NAME=(%s)\n", tok);
-		if ((tags[i].name == NULL) || (!strcmp (buf, tags[i].name))) {
+		if ((!tags[i].name) || (!strcmp (buf, tags[i].name))) {
 			if (out->fout) {
 				fflush (out->fout);
 			}
 			ret = tags[i].callback (tok, out);
+			if (ret == -1) {
+				break;
+			}
 			if (ret) {
 				ifl += ret;
 				if (ifl < 0 || ifl >= MAXIFL) {
 					fprintf (stderr, "Nested conditionals parsing error.\n");
-					return;
+					break;
 				}
 			}
 			break;
 		}
 	}
+	return ret;
 }
 
-/* XXX : Do not dump to temporally files!! */
-char *spp_run_str(char *buf) {
+static char *spp_run_str(char *buf, int *rv) {
 	char *b;
 	Output tmp;
 	tmp.fout = NULL;
 	tmp.cout = r_strbuf_new ("");
-	spp_run (buf, &tmp);
+	int rc = spp_run (buf, &tmp);
 	b = strdup (r_strbuf_get (tmp.cout));
 	r_strbuf_free (tmp.cout);
+	if (rv) {
+		*rv = rc;
+	}
 	return b;
 }
 
@@ -152,7 +158,7 @@ retry:
 		incmd = 1;
 		if (!tag_begin || (tag_begin && ptr == buf)) {
 			*ptr = '\0';
-			ptr = ptr + strlen (tag_pre);;
+			ptr = ptr + strlen (tag_pre);
 			do_fputs (out, buf);
 			D printf ("==> 0 (%s)\n", ptr);
 		}
@@ -170,10 +176,10 @@ retry:
 		if (ptrr) {
 			if (ptrr < ptr2) {
 				char *p = strdup (ptr2 + 2);
-				char *s = spp_run_str (ptrr + strlen (tag_pre));
-				D fprintf(stderr, "strcpy(%s)(%s)\n",ptrr, s);
-				strcpy(ptrr, s);
-				free(s);
+				char *s = spp_run_str (ptrr + strlen (tag_pre), NULL);
+				D fprintf (stderr, "strcpy(%s)(%s)\n",ptrr, s);
+				strcpy (ptrr, s);
+				free (s);
 				ptr[-2] = tag_pre[0]; // XXX -2 check underflow?
 
 				D fprintf(stderr, "strcat(%s)(%s)\n",ptrr, p);
@@ -245,13 +251,13 @@ void spp_io(FILE *in, Output *out) {
 	if (!lbuf) {
 		lbuf = calloc (1, 4096);
 	}
-	if (lbuf == NULL) {
+	if (!lbuf) {
 		fprintf (stderr, "Out of memory.\n");
 		return;
 	}
-	lbuf[0]='\0';
-	while (!feof(in)) {
-		buf[0]='\0'; // ???
+	lbuf[0] = '\0';
+	while (!feof (in)) {
+		buf[0] = '\0'; // ???
 		fgets (buf, 1023, in);
 		if (feof (in)) break;
 		lines = 1;
@@ -266,7 +272,9 @@ void spp_io(FILE *in, Output *out) {
 				if (!strcmp (eol, proc->multiline)) {
 					D fprintf (stderr, "Multiline detected!\n");
 					fgets (eol, 1023, in);
-					if (feof (in)) break;
+					if (feof (in)) {
+						break;
+					}
 					lines++;
 				} else {
 					break;
@@ -286,16 +294,16 @@ int spp_file(const char *file, Output *out) {
 		spp_io (in, out);
 		fclose (in);
 		return 1;
-	} else {
-		fprintf (stderr, "Cannot find '%s'\n", file);
 	}
+	fprintf (stderr, "Cannot find '%s'\n", file);
 	return 0;
 }
 
 void spp_proc_list_kw() {
 	int i;
-	for (i = 0; tags[i].name; i++)
+	for (i = 0; tags[i].name; i++) {
 		printf ("%s\n", tags[i].name);
+	}
 }
 
 void spp_proc_list() {

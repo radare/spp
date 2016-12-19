@@ -77,7 +77,7 @@ struct Proc {
 
 
 int spp_file(const char *file, Output *out);
-void spp_run(char *buf, Output *out);
+int spp_run(char *buf, Output *out);
 void spp_eval(char *buf, Output *out);
 void spp_io(FILE *in, Output *out);
 void do_printf(Output *out, char *str, ...) __attribute__ ((format (printf, 2, 3)));

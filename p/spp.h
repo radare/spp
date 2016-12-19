@@ -137,9 +137,19 @@ TAG_CALLBACK(spp_echo)
 
 TAG_CALLBACK(spp_error)
 {
-	if (!echo[ifl]) return 0;
-	fprintf(stderr, "ERROR: %s (line=%d)\n", buf, lineno);
-	exit(1);
+	if (!echo[ifl]) {
+		return 0;
+	}
+	fprintf (stderr, "ERROR: %s (line=%d)\n", buf, lineno);
+	return -1;
+}
+
+TAG_CALLBACK(spp_warning)
+{
+	if (!echo[ifl]) {
+		return 0;
+	}
+	fprintf (stderr, "ERROR: %s (line=%d)\n", buf, lineno);
 	return 0;
 }
 
@@ -365,6 +375,7 @@ struct Tag spp_tags[] = {
 	{ "endswitch", spp_endswitch },
 	{ "echo", spp_echo },
 	{ "error", spp_error },
+	{ "warning", spp_warning },
 	{ "trace", spp_trace },
 	{ "ifin", spp_ifin },
 	{ "ifnot", spp_ifnot },
