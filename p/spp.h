@@ -278,9 +278,12 @@ TAG_CALLBACK(spp_endif)
 
 TAG_CALLBACK(spp_default)
 {
-	if (!echo[ifl]) return 0;
-	if (buf[-1] != ';') /* commented tag */
-		fprintf (stderr, "WARNING: invalid command(%s) at line %d\n", buf, lineno);
+	if (!echo[ifl]) {
+		return 0;
+	}
+	if (buf[-1] != ';') { /* commented tag */
+		fprintf (stderr, "WARNING: invalid command: '%s' at line %d\n", buf, lineno);
+	}
 	return 0;
 }
 

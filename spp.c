@@ -10,7 +10,7 @@ static int lbuf_s = 1024;
 static int lbuf_n = 0;
 static int incmd = 0;
 static int printed = 0;
-static char *tag_pre, *tag_post, *token;
+static char *tag_pre, *tag_post, *token = NULL;
 
 int lineno = 1;
 int tag_begin, echo[MAXIFL];
@@ -20,11 +20,11 @@ void spp_run(char *buf, Output *out) {
 	int i, ret;
 	char *tok;
 
-	D fprintf(stderr, "SPP_RUN(%s)\n", buf);
+	D fprintf (stderr, "SPP_RUN(%s)\n", buf);
 	if (proc->chop) {
 		for (; IS_SPACE (*buf); buf++);
 		for (tok = buf + strlen(buf) - 1; IS_SPACE (*tok); tok--) {
-			*tok='\0';
+			*tok = '\0';
 		}
 	}
 
@@ -89,7 +89,7 @@ void do_printf(Output *out, char *str, ...) {
 		vsnprintf (tmp, sizeof (tmp), str, ap);
 		r_strbuf_append (out->cout, tmp);
 	}
-	va_end(ap);
+	va_end (ap);
 }
 
 void do_fputs(Output *out, char *str) {
@@ -119,7 +119,7 @@ void spp_eval(char *buf, Output *out) {
 	printed = 0;
 retry:
 	/* per word */
-	if (tag_pre == NULL) {
+	if (!tag_pre && token) {
 		do {
 			ptr = strstr (buf, token);
 			if (ptr) {
@@ -220,7 +220,7 @@ retry:
 		if (ptr) {
 			lbuf_strcat (lbuf, ptr);
 		} else {
-			if (lbuf == NULL) {
+			if (!lbuf) {
 				// XXX should never happen
 				fprintf (stderr, "syntax error?\n");
 				return;
@@ -228,8 +228,7 @@ retry:
 			if (buf[0]) {
 				if (incmd) {
 					lbuf_strcat (lbuf, buf);
-				}
-				else {
+				} else {
 					do_fputs (out, buf);
 				}
 			} else {
@@ -243,15 +242,15 @@ retry:
 void spp_io(FILE *in, Output *out) {
 	char buf[4096];
 	int lines;
-	if (lbuf == NULL) {
-		lbuf = malloc (4096);
+	if (!lbuf) {
+		lbuf = calloc (1, 4096);
 	}
 	if (lbuf == NULL) {
 		fprintf (stderr, "Out of memory.\n");
 		return;
 	}
 	lbuf[0]='\0';
-	while(!feof(in)) {
+	while (!feof(in)) {
 		buf[0]='\0'; // ???
 		fgets (buf, 1023, in);
 		if (feof (in)) break;
@@ -265,11 +264,13 @@ void spp_io(FILE *in, Output *out) {
 			while (1) {
 				char *eol = buf + strlen (buf) - strlen (proc->multiline);
 				if (!strcmp (eol, proc->multiline)) {
-					D fprintf(stderr, "Multiline detected!\n");
+					D fprintf (stderr, "Multiline detected!\n");
 					fgets (eol, 1023, in);
-					if (feof(in)) break;
+					if (feof (in)) break;
 					lines++;
-				} else break;
+				} else {
+					break;
+				}
 			}
 		}
 		spp_eval (buf, out);
@@ -280,12 +281,14 @@ void spp_io(FILE *in, Output *out) {
 
 int spp_file(const char *file, Output *out) {
 	FILE *in = fopen (file, "r");
-	D fprintf(stderr, "SPP-FILE(%s)\n", file);
+	D fprintf (stderr, "SPP-FILE(%s)\n", file);
 	if (in) {
 		spp_io (in, out);
 		fclose (in);
 		return 1;
-	} else fprintf (stderr, "Cannot find '%s'\n", file);
+	} else {
+		fprintf (stderr, "Cannot find '%s'\n", file);
+	}
 	return 0;
 }
 
@@ -297,7 +300,7 @@ void spp_proc_list_kw() {
 
 void spp_proc_list() {
 	int i;
-	for (i=0;procs[i];i++) {
+	for (i=0; procs[i]; i++) {
 		printf ("%s\n", procs[i]->name);
 	}
 }
@@ -316,15 +319,16 @@ void spp_proc_set(struct Proc *p, char *arg, int fail) {
 		fprintf (stderr, "Invalid preprocessor name '%s'\n", arg);
 		return;
 	}
-	if (proc == NULL)
+	if (!proc) {
 		proc = p;
-
-	if (proc != NULL) {
+	}
+	if (proc) {
 		// TODO: wtf!
 		tag_pre = proc->tag_pre;
 		tag_post = proc->tag_post;
-		for (i = 0; i < MAXIFL; i++)
+		for (i = 0; i < MAXIFL; i++) {
 			echo[i] = proc->default_echo;
+		}
 		token = proc->token;
 		tag_begin = proc->tag_begin;
 		args = (struct Arg*)proc->args;
