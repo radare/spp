@@ -86,16 +86,21 @@ TAG_CALLBACK(spp_add)
 	char res[32];
 	char *var, *eq = strchr (buf, ' ');
 	int ret = 0;
-	if (!echo[ifl]) return 0;
+	if (!echo[ifl]) {
+		return 0;
+	}
 	if (eq) {
 		*eq = '\0';
 		var = spp_var_get (buf);
-		if (var != NULL)
+		if (var) {
 			ret = atoi (var);
+		}
 		ret += atoi (eq + 1);
-		sprintf (res, "%d", ret);
+		snprintf (res, sizeof (res), "%d", ret);
 		r_sys_setenv (buf, res);
-	} else { /* syntax error */ }
+	} else {
+		/* syntax error */
+	}
 	return 0;
 }
 
