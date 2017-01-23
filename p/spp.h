@@ -199,7 +199,7 @@ TAG_CALLBACK(spp_include)
 TAG_CALLBACK(spp_if)
 {
 	char *var = spp_var_get(buf);
-	echo[ifl + 1] = (var && *var!='0' && *var != '\0')? 1: 0;
+	echo[ifl + 1] = (var && *var != '0' && *var != '\0') ? 1 : 0;
 	return 1;
 }
 

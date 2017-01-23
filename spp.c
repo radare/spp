@@ -46,11 +46,12 @@ int spp_run(char *buf, Output *out) {
 				fflush (out->fout);
 			}
 			ret = tags[i].callback (tok, out);
+			ifl += ret;
 			if (ret == -1) {
 				break;
 			}
 			if (ret) {
-				ifl += ret;
+
 				if (ifl < 0 || ifl >= MAXIFL) {
 					fprintf (stderr, "Nested conditionals parsing error.\n");
 					break;
@@ -215,7 +216,7 @@ retry:
 				if (buf[0] == '\n' && printed) {
 					buf++;
 				}
-				D printf (" ==> 2.1: continue(%s)\n", ptr2 + delta);
+				D printf (" ==> 2.1: continue(%s)\n", buf);
 				goto retry;
 			} else {
 				do_fputs (out, "\n");
