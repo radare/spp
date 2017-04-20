@@ -10,9 +10,8 @@ static int lbuf_s = 1024;
 static int lbuf_n = 0;
 //static char *tag_pre, *tag_post, *token = NULL;
 
-int lineno = 1;
-int echo[MAXIFL];
-int ifl = 0; /* conditional nest level */
+//int echo[MAXIFL];
+//int ifl = 0; /* conditional nest level */
 
 int spp_run(char *buf, Output *out) {
 	int i, ret = 0;
@@ -44,14 +43,14 @@ int spp_run(char *buf, Output *out) {
 			if (out->fout) {
 				fflush (out->fout);
 			}
-			ret = tags[i].callback (tok, out);
-			ifl += ret;
+			ret = tags[i].callback (tok, out, &proc->state);
+			proc->state.ifl += ret;
 			if (ret == -1) {
 				break;
 			}
 			if (ret) {
 
-				if (ifl < 0 || ifl >= MAXIFL) {
+				if (proc->state.ifl < 0 || proc->state.ifl >= MAXIFL) {
 					fprintf (stderr, "Nested conditionals parsing error.\n");
 					break;
 				}
@@ -101,8 +100,8 @@ void do_printf(Output *out, char *str, ...) {
 int do_fputs(Output *out, char *str) {
 	int i;
 	int printed = 0;
-	for (i = 0; i <= ifl; i++) {
-		if (!echo[i]) {
+	for (i = 0; i <= proc->state.ifl; i++) {
+		if (!proc->state.echo[i]) {
 			return printed;
 		}
 	}
@@ -276,7 +275,7 @@ void spp_io(FILE *in, Output *out) {
 			}
 		}
 		spp_eval (buf, out);
-		lineno += lines;
+		proc->state.lineno += lines;
 	}
 	do_fputs (out, lbuf);
 }
@@ -325,11 +324,12 @@ void spp_proc_set(struct Proc *p, char *arg, int fail) {
 		proc = p;
 	}
 	if (proc) {
-		// TODO: w
+		proc->state.lineno = 1;
+		proc->state.ifl = 0;
 		for (i = 0; i < MAXIFL; i++) {
-			echo[i] = proc->default_echo;
+			proc->state.echo[i] = proc->default_echo;
 		}
-		args = (struct Arg*)proc->args;
+		//args = (struct Arg*)proc->args;
 		tags = (struct Tag*)proc->tags;
 	}
 }
