@@ -8,10 +8,10 @@
 static char *lbuf = NULL;
 static int lbuf_s = 1024;
 static int lbuf_n = 0;
-static char *tag_pre, *tag_post, *token = NULL;
+//static char *tag_pre, *tag_post, *token = NULL;
 
 int lineno = 1;
-int tag_begin, echo[MAXIFL];
+int echo[MAXIFL];
 int ifl = 0; /* conditional nest level */
 
 int spp_run(char *buf, Output *out) {
@@ -27,8 +27,8 @@ int spp_run(char *buf, Output *out) {
 		}
 	}
 
-	if (token) {
-		tok = strstr (buf, token);
+	if (proc->token) {
+		tok = strstr (buf, proc->token);
 		if (tok) {
 			*tok = '\0';
 			tok = tok + 1;
@@ -127,9 +127,9 @@ void spp_eval(char *buf, Output *out) {
 	int printed = 0;
 retry:
 	/* per word */
-	if (!tag_pre && token) {
+	if (!proc->tag_pre && proc->token) {
 		do {
-			ptr = strstr (buf, token);
+			ptr = strstr (buf, proc->token);
 			if (ptr) {
 				*ptr = '\0';
 			}
@@ -145,27 +145,27 @@ retry:
 		return;
 	}
 
-	if (!tag_post) {
+	if (!proc->tag_post) {
 		/* handle per line here ? */
 		return;
 	}
 
 	// TODO: do it in scope!
-	delta = strlen (tag_post);
+	delta = strlen (proc->tag_post);
 
 	/* (pre) tag */
-	ptr = tag_pre? strstr (buf, tag_pre): NULL;
+	ptr = proc->tag_pre? strstr (buf, proc->tag_pre): NULL;
 	if (ptr) {
 		D printf ("==> 0.0 (%s)\n", ptr);
-		if (!tag_begin || (tag_begin && ptr == buf)) {
+		if (!proc->tag_begin || (proc->tag_begin && ptr == buf)) {
 			*ptr = '\0';
-			ptr = ptr + strlen (tag_pre);
+			ptr = ptr + strlen (proc->tag_pre);
 			if (do_fputs (out, buf)) {
 				printed = 1;
 			}
 			D printf ("==> 0 (%s)\n", ptr);
 		}
-		ptrr = strstr (ptr + strlen (tag_pre), tag_pre);
+		ptrr = strstr (ptr + strlen (proc->tag_pre), proc->tag_pre);
 	}
 
 	/* (post) tag */
@@ -175,17 +175,17 @@ retry:
 		}
 		return;
 	}
-	ptr2 = strstr (ptr, tag_post);
+	ptr2 = strstr (ptr, proc->tag_post);
 	if (ptr2) {
 		*ptr2 = '\0';
 		if (ptrr) {
 			if (ptrr < ptr2) {
 				char *p = strdup (ptr2 + 2);
-				char *s = spp_run_str (ptrr + strlen (tag_pre), NULL);
+				char *s = spp_run_str (ptrr + strlen (proc->tag_pre), NULL);
 				D fprintf (stderr, "strcpy(%s)(%s)\n", ptrr, s);
 				strcpy (ptrr, s);
 				free (s);
-				ptr[-2] = tag_pre[0]; // XXX -2 check underflow?
+				ptr[-2] = proc->tag_pre[0]; // XXX -2 check underflow?
 
 				D fprintf (stderr, "strcat(%s)(%s)\n", ptrr, p);
 				strcat (ptrr, p);
@@ -325,14 +325,10 @@ void spp_proc_set(struct Proc *p, char *arg, int fail) {
 		proc = p;
 	}
 	if (proc) {
-		// TODO: wtf!
-		tag_pre = proc->tag_pre;
-		tag_post = proc->tag_post;
+		// TODO: w
 		for (i = 0; i < MAXIFL; i++) {
 			echo[i] = proc->default_echo;
 		}
-		token = proc->token;
-		tag_begin = proc->tag_begin;
 		args = (struct Arg*)proc->args;
 		tags = (struct Tag*)proc->tags;
 	}
