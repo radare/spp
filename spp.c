@@ -100,13 +100,14 @@ void do_printf(Output *out, char *str, ...) {
 
 int do_fputs(Output *out, char *str) {
 	int i;
+	int printed = 0;
 	for (i = 0; i <= ifl; i++) {
 		if (!echo[i]) {
-			return 0;
+			return printed;
 		}
 	}
 	if (str[0]) {
-		return 1;
+		printed = 1;
 	}
 	if (proc->fputs) {
 		proc->fputs (out, str);
@@ -115,7 +116,7 @@ int do_fputs(Output *out, char *str) {
 			fprintf (out->fout, "%s", str);
 		}
 	}
-	return 0;
+	return printed;
 }
 
 void spp_eval(char *buf, Output *out) {
@@ -169,7 +170,9 @@ retry:
 
 	/* (post) tag */
 	if (!ptr) {
-		do_fputs (out, buf);
+		if (do_fputs (out, buf)) {
+			printed = 1;
+		}
 		return;
 	}
 	ptr2 = strstr (ptr, tag_post);
