@@ -9,7 +9,6 @@ static char *lbuf = NULL;
 static int lbuf_s = 1024;
 static int lbuf_n = 0;
 static int incmd = 0;
-static int printed = 0;
 static char *tag_pre, *tag_post, *token = NULL;
 
 int lineno = 1;
@@ -100,15 +99,15 @@ void do_printf(Output *out, char *str, ...) {
 	va_end (ap);
 }
 
-void do_fputs(Output *out, char *str) {
+int do_fputs(Output *out, char *str) {
 	int i;
 	for (i = 0; i <= ifl; i++) {
 		if (!echo[i]) {
-			return;
+			return 0;
 		}
 	}
 	if (str[0]) {
-		printed = 1;
+		return 1;
 	}
 	if (proc->fputs) {
 		proc->fputs (out, str);
@@ -117,6 +116,7 @@ void do_fputs(Output *out, char *str) {
 			fprintf (out->fout, "%s", str);
 		}
 	}
+	return 0;
 }
 
 void spp_eval(char *buf, Output *out) {
@@ -124,7 +124,7 @@ void spp_eval(char *buf, Output *out) {
 	char *ptrr = NULL;
 	int delta;
 
-	printed = 0;
+	int printed = 0;
 retry:
 	/* per word */
 	if (!tag_pre && token) {
@@ -161,7 +161,9 @@ retry:
 		if (!tag_begin || (tag_begin && ptr == buf)) {
 			*ptr = '\0';
 			ptr = ptr + strlen (tag_pre);
-			do_fputs (out, buf);
+			if (do_fputs (out, buf)) {
+				printed = 1;
+			}
 			D printf ("==> 0 (%s)\n", ptr);
 		}
 		ptrr = strstr (ptr + strlen (tag_pre), tag_pre);
@@ -198,7 +200,9 @@ retry:
 			D printf("==> 1 (%s)\n", lbuf);
 			if (ptr) {
 				lbuf_strcat (lbuf, buf);
-				do_fputs (out, lbuf);
+				if (do_fputs (out, buf)) {
+					printed = 1;
+				}
 				spp_run (ptr, out);
 			} else {
 				lbuf_strcat (lbuf, buf);
@@ -220,10 +224,14 @@ retry:
 				D printf (" ==> 2.1: continue(%s)\n", buf);
 				goto retry;
 			} else {
-				do_fputs (out, "\n");
+				if (do_fputs (out, buf)) {
+					printed = 1;
+				}
 			}
 		}
-		do_fputs (out, ptr2 + delta);
+		if (do_fputs (out, buf)) {
+			printed = 1;
+		}
 	} else {
 		D printf ("==> 3\n");
 		lbuf_strcat (lbuf, ptr);
