@@ -43,8 +43,8 @@ static TAG_CALLBACK(cpp_else) {
 }
 
 static TAG_CALLBACK(cpp_ifndef) {
-	cpp_ifdef (buf, out, state);
-	cpp_else (buf, out, state);
+	cpp_ifdef (state, buf, out);
+	cpp_else (state, buf, out);
 	return 1;
 }
 

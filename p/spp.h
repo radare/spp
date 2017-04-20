@@ -262,8 +262,8 @@ static TAG_CALLBACK(spp_else) {
 }
 
 static TAG_CALLBACK(spp_ifnot) {
-	spp_if (buf, out, state);
-	spp_else (buf, out, state);
+	spp_if (state, buf, out);
+	spp_else (state, buf, out);
 	return 1;
 }
 

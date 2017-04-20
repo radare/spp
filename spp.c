@@ -43,7 +43,7 @@ int spp_run(char *buf, Output *out) {
 			if (out->fout) {
 				fflush (out->fout);
 			}
-			ret = tags[i].callback (tok, out, &proc->state);
+			ret = tags[i].callback (&proc->state, tok, out);
 			proc->state.ifl += ret;
 			if (ret == -1) {
 				break;
