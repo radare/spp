@@ -8,7 +8,6 @@
 static char *lbuf = NULL;
 static int lbuf_s = 1024;
 static int lbuf_n = 0;
-static int incmd = 0;
 static char *tag_pre, *tag_post, *token = NULL;
 
 int lineno = 1;
@@ -157,7 +156,6 @@ retry:
 	ptr = tag_pre? strstr (buf, tag_pre): NULL;
 	if (ptr) {
 		D printf ("==> 0.0 (%s)\n", ptr);
-		incmd = 1;
 		if (!tag_begin || (tag_begin && ptr == buf)) {
 			*ptr = '\0';
 			ptr = ptr + strlen (tag_pre);
@@ -195,7 +193,6 @@ retry:
 				goto retry;
 			}
 		}
-		incmd = 0;
 		if (lbuf && lbuf[0]) {
 			D printf("==> 1 (%s)\n", lbuf);
 			if (ptr) {
