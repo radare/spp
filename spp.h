@@ -52,6 +52,12 @@ typedef struct SppState {
 	int ifl;
 } SppState;
 
+typedef struct SppBuf {
+    char *lbuf;
+    int lbuf_s;
+    int lbuf_n;
+} SppBuf;
+
 #define ARG_CALLBACK(x) int x (char *arg)
 /* XXX swap arguments ?? */
 #define TAG_CALLBACK(x) int x (SppState *state, char *buf, Output *out)
@@ -84,6 +90,7 @@ struct Proc {
 	int tag_begin;
 	int default_echo;
 	SppState state;
+    SppBuf buf;
 };
 
 int spp_file(const char *file, Output *out);

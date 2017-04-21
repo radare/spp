@@ -3,16 +3,6 @@
 #include "spp.h"
 #include "config.h"
 
-// TODO: avoid globals
-
-static char *lbuf = NULL;
-static int lbuf_s = 1024;
-static int lbuf_n = 0;
-//static char *tag_pre, *tag_post, *token = NULL;
-
-//int echo[MAXIFL];
-//int ifl = 0; /* conditional nest level */
-
 int spp_run(char *buf, Output *out) {
 	int i, ret = 0;
 	char *tok;
@@ -75,13 +65,13 @@ static char *spp_run_str(char *buf, int *rv) {
 	return b;
 }
 
-void lbuf_strcat(char *dst, char *src) {
+void lbuf_strcat(SppBuf *dst, char *src) {
 	int len = strlen (src);
-	if (!lbuf || (len + lbuf_n) > lbuf_s) {
-		lbuf = realloc (lbuf, lbuf_s << 1);
+	if (!dst->lbuf || (len + dst->lbuf_n) > dst->lbuf_s) {
+		dst->lbuf = realloc (dst->lbuf, dst->lbuf_s << 1);
 	}
-	memcpy (lbuf + lbuf_n, src, len + 1);
-	lbuf_n += len;
+	memcpy (dst->lbuf + dst->lbuf_n, src, len + 1);
+	dst->lbuf_n += len;
 }
 
 void do_printf(Output *out, char *str, ...) {
@@ -195,22 +185,22 @@ retry:
 				goto retry;
 			}
 		}
-		if (lbuf && lbuf[0]) {
-			D printf("==> 1 (%s)\n", lbuf);
+		if (proc->buf.lbuf && proc->buf.lbuf[0]) {
+			D printf("==> 1 (%s)\n", proc->buf.lbuf);
 			if (ptr) {
-				lbuf_strcat (lbuf, buf);
+				lbuf_strcat (&proc->buf, buf);
 				if (do_fputs (out, buf)) {
 					printed = 1;
 				}
 				spp_run (ptr, out);
 			} else {
-				lbuf_strcat (lbuf, buf);
-				D printf ("=(1)=> spp_run(%s)\n", lbuf);
-				spp_run (lbuf+delta, out);
-				D printf ("=(1)=> spp_run(%s)\n", lbuf);
+				lbuf_strcat (&proc->buf, buf);
+				D printf ("=(1)=> spp_run(%s)\n", proc->buf.lbuf);
+				spp_run (proc->buf.lbuf + delta, out);
+				D printf ("=(1)=> spp_run(%s)\n", proc->buf.lbuf);
 			}
-			lbuf[0]='\0';
-			lbuf_n = 0;
+			proc->buf.lbuf[0]='\0';
+			proc->buf.lbuf_n = 0;
 		} else {
 			D printf ("==> 2 (%s)\n", ptr);
 			if (ptr) {
@@ -233,7 +223,7 @@ retry:
 		}
 	} else {
 		D printf ("==> 3\n");
-		lbuf_strcat (lbuf, ptr);
+		lbuf_strcat (&proc->buf, ptr);
 	}
 }
 
@@ -241,14 +231,15 @@ retry:
 void spp_io(FILE *in, Output *out) {
 	char buf[4096];
 	int lines;
-	if (!lbuf) {
-		lbuf = calloc (1, 4096);
+	if (!proc->buf.lbuf) {
+		proc->buf.lbuf = calloc (1, 4096);
 	}
-	if (!lbuf) {
+	if (!proc->buf.lbuf) {
 		fprintf (stderr, "Out of memory.\n");
 		return;
 	}
-	lbuf[0] = '\0';
+	proc->buf.lbuf[0] = '\0';
+    proc->buf.lbuf_s = 1024;
 	while (!feof (in)) {
 		buf[0] = '\0'; // ???
 		fgets (buf, 1023, in);
@@ -277,7 +268,7 @@ void spp_io(FILE *in, Output *out) {
 		spp_eval (buf, out);
 		proc->state.lineno += lines;
 	}
-	do_fputs (out, lbuf);
+	do_fputs (out, proc->buf.lbuf);
 }
 
 int spp_file(const char *file, Output *out) {
