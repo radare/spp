@@ -60,7 +60,7 @@ typedef struct SppBuf {
 
 #define ARG_CALLBACK(x) int x (char *arg)
 /* XXX swap arguments ?? */
-#define TAG_CALLBACK(x) int x (SppState *state, char *buf, Output *out)
+#define TAG_CALLBACK(x) int x (SppState *state, Output *out, char *buf)
 #define PUT_CALLBACK(x) int x (Output *out, char *buf)
 #define IS_SPACE(x) ((x==' ')||(x=='\t')||(x=='\r')||(x=='\n'))
 
