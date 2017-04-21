@@ -45,9 +45,22 @@ typedef struct {
 	int size;
 } Output;
 
+
+typedef struct SppState {
+	int lineno;
+	int echo[MAXIFL];
+	int ifl;
+} SppState;
+
+typedef struct SppBuf {
+    char *lbuf;
+    int lbuf_s;
+    int lbuf_n;
+} SppBuf;
+
 #define ARG_CALLBACK(x) int x (char *arg)
 /* XXX swap arguments ?? */
-#define TAG_CALLBACK(x) int x (char *buf, Output *out)
+#define TAG_CALLBACK(x) int x (SppState *state, Output *out, char *buf)
 #define PUT_CALLBACK(x) int x (Output *out, char *buf)
 #define IS_SPACE(x) ((x==' ')||(x=='\t')||(x=='\r')||(x=='\n'))
 
@@ -76,9 +89,9 @@ struct Proc {
 	int chop;
 	int tag_begin;
 	int default_echo;
+	SppState state;
+    SppBuf buf;
 };
-
-
 
 int spp_file(const char *file, Output *out);
 int spp_run(char *buf, Output *out);
