@@ -82,6 +82,7 @@ void do_printf(Output *out, char *str, ...) {
 	} else {
 		char tmp[4096];
 		vsnprintf (tmp, sizeof (tmp), str, ap);
+		tmp[sizeof (tmp) - 1] = 0;
 		r_strbuf_append (out->cout, tmp);
 	}
 	va_end (ap);
@@ -112,7 +113,6 @@ void spp_eval(char *buf, Output *out) {
 	char *ptr, *ptr2;
 	char *ptrr = NULL;
 	int delta;
-
 	int printed = 0;
 retry:
 	/* per word */
@@ -239,7 +239,7 @@ void spp_io(FILE *in, Output *out) {
 		return;
 	}
 	proc->buf.lbuf[0] = '\0';
-    proc->buf.lbuf_s = 1024;
+	proc->buf.lbuf_s = 1024;
 	while (!feof (in)) {
 		buf[0] = '\0'; // ???
 		fgets (buf, 1023, in);

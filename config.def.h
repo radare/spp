@@ -4,6 +4,10 @@
 #include "p/pod.h"
 #include "p/cpp.h"
 
+#ifdef HAVE_FORK
+#define HAVE_FORK 1
+#endif
+
 struct Proc *procs[] = {
 	&spp_proc,
 	&cpp_proc,
