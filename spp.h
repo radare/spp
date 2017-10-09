@@ -28,6 +28,10 @@ extern int ifl;
 extern int echo[MAXIFL];
 extern int lineno;
 
+#ifndef HAVE_FORK
+#define HAVE_FORK 1
+#endif
+
 #ifndef DLL_LOCAL
 #ifdef MSC_VER
 #define DLL_LOCAL
@@ -48,7 +52,6 @@ typedef struct {
 	FILE *fout;
 	int size;
 } Output;
-
 
 typedef struct SppState {
 	int lineno;
