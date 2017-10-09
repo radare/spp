@@ -268,7 +268,7 @@ void spp_io(FILE *in, Output *out) {
 		spp_eval (buf, out);
 		proc->state.lineno += lines;
 	}
-	do_fputs (out, proc->buf.lbuf);
+	(void)do_fputs (out, proc->buf.lbuf);
 }
 
 int spp_file(const char *file, Output *out) {
