@@ -249,8 +249,9 @@ static TAG_CALLBACK(spp_grepline) {
 		fd = fopen (buf, "r");
 		line = atoi (ptr+1);
 		if (fd) {
-			while (!feof (fd) && line--)
+			while (!feof (fd) && line--) {
 				fgets(b, 1023, fd);
+			}
 			fclose (fd);
 			do_printf (out, "%s", b);
 		} else {
@@ -266,8 +267,8 @@ static TAG_CALLBACK(spp_else) {
 }
 
 static TAG_CALLBACK(spp_ifnot) {
-	spp_if (state, buf, out);
-	spp_else (state, buf, out);
+	spp_if (state, out, buf);
+	spp_else (state, out, buf);
 	return 1;
 }
 
