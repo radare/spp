@@ -2,7 +2,6 @@ project('spp', 'c')
 
 platform_inc = ['.']
 c_args = []
-objects_files = []
 
 spp_files = [
   'spp.c'
