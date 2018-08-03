@@ -5,12 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#if HAVE_R_UTIL
-#include <r_util.h>
-#else
-#include "r_api.h"
-int r_sys_setenv(const char *key, const char *value);
-#endif
+#include "s_api.h"
 
 #ifdef __WINDOWS__
 #include <io.h>
@@ -52,7 +47,7 @@ DLL_LOCAL struct Arg *args = (struct Arg *)&x##_args; \
 DLL_LOCAL struct Proc *proc = &x##_proc;
 
 typedef struct {
-	RStrBuf *cout;
+	SStrBuf *cout;
 	FILE *fout;
 	int size;
 } Output;
@@ -101,7 +96,7 @@ struct Proc {
 	int tag_begin;
 	int default_echo;
 	SppState state;
-    SppBuf buf;
+	SppBuf buf;
 };
 
 R_API int spp_file(const char *file, Output *out);

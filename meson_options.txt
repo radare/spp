@@ -1,2 +1,0 @@
-option('use_r_util', type: 'boolean', value: false)
-option('r_util_includes', type: 'string', value: '')
