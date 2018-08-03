@@ -55,10 +55,10 @@ static char *spp_run_str(char *buf, int *rv) {
 	char *b;
 	Output tmp;
 	tmp.fout = NULL;
-	tmp.cout = r_strbuf_new ("");
+	tmp.cout = s_strbuf_new ("");
 	int rc = spp_run (buf, &tmp);
-	b = strdup (r_strbuf_get (tmp.cout));
-	r_strbuf_free (tmp.cout);
+	b = strdup (s_strbuf_get (tmp.cout));
+	s_strbuf_free (tmp.cout);
 	if (rv) {
 		*rv = rc;
 	}
@@ -83,7 +83,7 @@ void do_printf(Output *out, char *str, ...) {
 		char tmp[4096];
 		vsnprintf (tmp, sizeof (tmp), str, ap);
 		tmp[sizeof (tmp) - 1] = 0;
-		r_strbuf_append (out->cout, tmp);
+		s_strbuf_append (out->cout, tmp);
 	}
 	va_end (ap);
 }
