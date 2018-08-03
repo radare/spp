@@ -2,6 +2,10 @@ project('spp', 'c')
 
 platform_inc = ['.']
 
+configure_file(input: 'config.def.h',
+  output: 'config.h',
+  copy: true)
+
 spp_files = [
   'spp.c',
   's_api.c'
