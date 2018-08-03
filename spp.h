@@ -42,9 +42,9 @@ extern int lineno;
 #define GET_ARG(x,y,i) if (y[i][2]) x = y[i] + 2; else x = y[++i]
 
 #define DEFAULT_PROC(x) \
-DLL_LOCAL struct Tag *tags = (struct Tag *)&x##_tags; \
-DLL_LOCAL struct Arg *args = (struct Arg *)&x##_args; \
-DLL_LOCAL struct Proc *proc = &x##_proc;
+struct Tag *tags = (struct Tag *)&x##_tags; \
+struct Arg *args = (struct Arg *)&x##_args; \
+struct Proc *proc = &x##_proc;
 
 typedef struct {
 	SStrBuf *cout;
