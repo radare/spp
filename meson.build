@@ -13,7 +13,7 @@ spp_files = [
 
 spp_inc = include_directories(platform_inc)
 
-libspp = static_library('spp', spp_files,
+libspp = library('spp', spp_files,
   include_directories: spp_inc,
   implicit_include_directories: false,
   install: true
