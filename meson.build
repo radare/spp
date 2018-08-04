@@ -1,7 +1,5 @@
 project('spp', 'c')
-spp_version = '1.0'
-
-platform_inc = ['.']
+spp_version = '1.0.0'
 
 configure_file(input: 'config.def.h',
   output: 'config.h',
@@ -12,28 +10,26 @@ spp_files = [
   's_api.c'
 ]
 
-spp_inc = include_directories(platform_inc)
+libspp_static = static_library('spp', spp_files,
+  install: not meson.is_subproject()
+)
 
-libspp = both_libraries('spp', spp_files,
-  include_directories: spp_inc,
-  implicit_include_directories: false,
-  install: true,
+libspp = shared_library('spp', spp_files,
+  install: not meson.is_subproject(),
   soversion: spp_version
 )
 
 spp_static_dep = declare_dependency(
-  link_with: libspp.get_static_lib(),
-  include_directories: spp_inc
+  link_with: libspp_static,
+  compile_args: '-fvisibility=hidden'
 )
 
 spp_dep = declare_dependency(
-  link_with: libspp.get_shared_lib(),
-  include_directories: spp_inc
+  link_with: libspp
 )
 
 pkgconfig_mod = import('pkgconfig')
-pkgconfig_mod.generate(
-  libraries: [libspp.get_shared_lib()],
+pkgconfig_mod.generate(libspp,
   version: spp_version,
   name: 'spp',
   subdirs: ['.'],
