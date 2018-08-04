@@ -1,9 +1,10 @@
 /* MIT (C) pancake (at) nopcode (dot) org - 2009-2017 */
 
 #include "spp.h"
+#include "s_api.h"
 #include "config.h"
 
-R_API int spp_run(char *buf, Output *out) {
+S_API int spp_run(char *buf, Output *out) {
 	int i, ret = 0;
 	char *tok;
 
@@ -74,20 +75,6 @@ void lbuf_strcat(SppBuf *dst, char *src) {
 	dst->lbuf_n += len;
 }
 
-void do_printf(Output *out, char *str, ...) {
-	va_list ap;
-	va_start (ap, str);
-	if (out->fout) {
-		vfprintf (out->fout, str, ap);
-	} else {
-		char tmp[4096];
-		vsnprintf (tmp, sizeof (tmp), str, ap);
-		tmp[sizeof (tmp) - 1] = 0;
-		s_strbuf_append (out->cout, tmp);
-	}
-	va_end (ap);
-}
-
 int do_fputs(Output *out, char *str) {
 	int i;
 	int printed = 0;
@@ -109,7 +96,7 @@ int do_fputs(Output *out, char *str) {
 	return printed;
 }
 
-R_API void spp_eval(char *buf, Output *out) {
+S_API void spp_eval(char *buf, Output *out) {
 	char *ptr, *ptr2;
 	char *ptrr = NULL;
 	int delta;
@@ -228,7 +215,7 @@ retry:
 }
 
 /* TODO: detect nesting */
-R_API void spp_io(FILE *in, Output *out) {
+S_API void spp_io(FILE *in, Output *out) {
 	char buf[4096];
 	int lines;
 	if (!proc->buf.lbuf) {
@@ -271,7 +258,7 @@ R_API void spp_io(FILE *in, Output *out) {
 	(void)do_fputs (out, proc->buf.lbuf);
 }
 
-R_API int spp_file(const char *file, Output *out) {
+S_API int spp_file(const char *file, Output *out) {
 	FILE *in = fopen (file, "r");
 	D fprintf (stderr, "SPP-FILE(%s)\n", file);
 	if (in) {
@@ -283,21 +270,21 @@ R_API int spp_file(const char *file, Output *out) {
 	return 0;
 }
 
-R_API void spp_proc_list_kw() {
+S_API void spp_proc_list_kw() {
 	int i;
 	for (i = 0; tags[i].name; i++) {
 		printf ("%s\n", tags[i].name);
 	}
 }
 
-R_API void spp_proc_list() {
+S_API void spp_proc_list() {
 	int i;
 	for (i=0; procs[i]; i++) {
 		printf ("%s\n", procs[i]->name);
 	}
 }
 
-R_API void spp_proc_set(struct Proc *p, char *arg, int fail) {
+S_API void spp_proc_set(struct Proc *p, char *arg, int fail) {
 	int i, j;
 	if (arg)
 	for (j = 0; procs[j]; j++) {
