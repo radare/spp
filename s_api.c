@@ -1,5 +1,6 @@
 /* radare - LGPL - Copyright 2013-2016 - pancake */
 
+#include "spp.h"
 #include "s_api.h"
 
 SStrBuf *s_strbuf_new(const char *str) {
@@ -102,4 +103,18 @@ int s_sys_setenv(const char *key, const char *value) {
 #warning s_sys_setenv : unimplemented for this platform
 	return 0;
 #endif
+}
+
+void do_printf(Output *out, char *str, ...) {
+	va_list ap;
+	va_start (ap, str);
+	if (out->fout) {
+		vfprintf (out->fout, str, ap);
+	} else {
+		char tmp[4096];
+		vsnprintf (tmp, sizeof (tmp), str, ap);
+		tmp[sizeof (tmp) - 1] = 0;
+		s_strbuf_append (out->cout, tmp);
+	}
+	va_end (ap);
 }

@@ -1,5 +1,5 @@
 project('spp', 'c')
-spp_version = '1.0.0'
+spp_version = '1.0'
 
 platform_inc = ['.']
 
@@ -31,7 +31,19 @@ spp_dep = declare_dependency(
   include_directories: spp_inc
 )
 
+pkgconfig_mod = import('pkgconfig')
+pkgconfig_mod.generate(
+  libraries: [libspp.get_shared_lib()],
+  version: spp_version,
+  name: 'spp',
+  subdirs: ['.'],
+  filebase: 'spp',
+  description: 'spp library'
+)
+
 if not meson.is_subproject()
+  install_headers('spp.h')
+
   spp_exe = executable('spp', ['main.c'],
     dependencies: spp_dep,
     install: true
