@@ -21,7 +21,6 @@ libspp = shared_library('spp', spp_files,
 
 spp_static_dep = declare_dependency(
   link_with: libspp_static,
-  compile_args: '-fvisibility=hidden'
 )
 
 spp_dep = declare_dependency(
