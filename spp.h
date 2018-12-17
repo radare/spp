@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #ifdef S_API
 #undef S_API
