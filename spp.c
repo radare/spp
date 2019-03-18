@@ -229,12 +229,15 @@ S_API void spp_io(FILE *in, Output *out) {
 	proc->buf.lbuf_s = 1024;
 	while (!feof (in)) {
 		buf[0] = '\0'; // ???
-		fgets (buf, 1023, in);
+		if (!fgets (buf, sizeof (buf) - 1, in)) {
+			break;
+		}
 		if (feof (in)) break;
 		lines = 1;
 		if (!memcmp (buf, "#!", 2)) {
-			fgets (buf, 1023, in);
-			if (feof (in)) break;
+			if (!fgets (buf, sizeof (buf) - 1, in) || feof (in)) {
+				break;
+			}
 			lines++;
 		}
 		if (proc->multiline) {
@@ -242,7 +245,9 @@ S_API void spp_io(FILE *in, Output *out) {
 				char *eol = buf + strlen (buf) - strlen (proc->multiline);
 				if (!strcmp (eol, proc->multiline)) {
 					D fprintf (stderr, "Multiline detected!\n");
-					fgets (eol, 1023, in);
+					if (!fgets (eol, 1023, in)) {
+						break;
+					}
 					if (feof (in)) {
 						break;
 					}
