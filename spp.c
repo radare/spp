@@ -1,11 +1,7 @@
 /* MIT (C) pancake (at) nopcode (dot) org - 2009-2019 */
 
 #include "spp.h"
-#if USE_R2
-#include <r_util.h>
-#else
 #include "r_api.h"
-#endif
 #include "config.h"
 
 S_API int spp_run(char *buf, Output *out) {
