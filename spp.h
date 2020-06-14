@@ -155,7 +155,7 @@ S_API void spp_proc_eval(SppProc *p, char *buf, Output *out);
 S_API void spp_io(FILE *in, Output *out);
 S_API void spp_proc_list(void);
 S_API void spp_proc_list_kw(void);
-S_API void spp_proc_set(SppProc *p, char *arg, int fail);
+S_API void spp_proc_set(SppProc *p, const char *arg, int fail);
 
 #if DEBUG
 #define D if (1)

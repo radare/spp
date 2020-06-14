@@ -5,7 +5,8 @@
 #include "config.h"
 
 S_API int spp_run(char *buf, Output *out) {
-	int i, ret = 0;
+	size_t i;
+	int ret = 0;
 	char *tok;
 
 	D fprintf (stderr, "SPP_RUN(%s)\n", buf);
@@ -301,14 +302,15 @@ S_API void spp_proc_list() {
 	}
 }
 
-S_API void spp_proc_set(struct Proc *p, char *arg, int fail) {
+S_API void spp_proc_set(SppProc *p, const char *arg, int fail) {
 	int i, j;
-	if (arg)
-	for (j = 0; procs[j]; j++) {
-		if (!strcmp (procs[j]->name, arg)) {
-			proc = procs[j];
-			D printf ("SET PROC:(%s)(%s)\n", arg, proc->name);
-			break;
+	if (arg) {
+		for (j = 0; procs[j]; j++) {
+			if (!strcmp (procs[j]->name, arg)) {
+				proc = procs[j];
+				D printf ("SET PROC:(%s)(%s)\n", arg, proc->name);
+				break;
+			}
 		}
 	}
 	if (arg && *arg && !procs[j] && fail) {
@@ -325,7 +327,7 @@ S_API void spp_proc_set(struct Proc *p, char *arg, int fail) {
 			proc->state.echo[i] = proc->default_echo;
 		}
 		//args = (struct Arg*)proc->args;
-		tags = (struct Tag*)proc->tags;
+		tags = (SppTag*)proc->tags;
 	}
 }
 
