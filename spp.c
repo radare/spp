@@ -303,21 +303,23 @@ S_API void spp_proc_list() {
 }
 
 S_API void spp_proc_set(SppProc *p, const char *arg, int fail) {
-	int i, j;
+	size_t i;
+	bool found = false;
 	if (arg) {
-		for (j = 0; procs[j]; j++) {
-			if (!strcmp (procs[j]->name, arg)) {
-				proc = procs[j];
+		for (i = 0; procs[i]; i++) {
+			if (!strcmp (procs[i]->name, arg)) {
+				proc = procs[i];
+				found = true;
 				D printf ("SET PROC:(%s)(%s)\n", arg, proc->name);
 				break;
 			}
 		}
 	}
-	if (arg && *arg && !procs[j] && fail) {
+	if (arg && *arg && !procs[i] && fail) {
 		fprintf (stderr, "Invalid preprocessor name '%s'\n", arg);
 		return;
 	}
-	if (!proc) {
+	if (!found || !proc) {
 		proc = p;
 	}
 	if (proc) {
