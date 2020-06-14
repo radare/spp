@@ -101,6 +101,13 @@ int do_fputs(Output *out, char *str) {
 	return printed;
 }
 
+S_API void spp_proc_eval(SppProc *p, char *buf, Output *out) {
+	SppProc *op = proc;
+	proc = p;
+	spp_eval (buf, out);
+	proc = op;
+}
+
 S_API void spp_eval(char *buf, Output *out) {
 	char *ptr, *ptr2;
 	char *ptrr = NULL;
