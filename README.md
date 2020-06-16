@@ -2,6 +2,7 @@ spp
 ===
 
 Author: pancake (pancake@nopcode.org)
+History: 2009-2020
 License: MIT
 
 Description
@@ -54,12 +55,18 @@ There are no embedding issues with the MIT license and the
 amount if code is pretty low (~400 LOC), and use the apis:
 
 ```c
+$ cat test.c
 #include "spp.c"
 
 int main() {
 	char *p = spp_eval_str (&spp_proc, "Hello <{system uname}>");
 	printf ("%s\n", p);
 	free (p);
+}
+
+$ gcc test.c
+$ ./a.out
+Hello Darwin
 ```
 
 Commandline
@@ -125,3 +132,5 @@ ASM
 .include t/syscalls.asm
 int3
 ```
+
+...

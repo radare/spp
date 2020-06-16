@@ -4,6 +4,10 @@
 #include "r_api.h"
 #include "config.h"
 
+#if !USE_R2
+#include "r_api.c"
+#endif
+
 S_API int spp_run(char *buf, Output *out) {
 	size_t i;
 	int ret = 0;
