@@ -1,4 +1,4 @@
-/* MIT (C) pancake (at) nopcode (dot) org - 2009-2019 */
+/* MIT pancake <pancake@nopcode.org> (C) 2009-2020 */
 
 #include "spp.h"
 #include "r_api.h"
@@ -293,8 +293,8 @@ S_API void spp_proc_list_kw() {
 }
 
 S_API void spp_proc_list() {
-	int i;
-	for (i=0; procs[i]; i++) {
+	size_t i;
+	for (i = 0; procs[i]; i++) {
 		printf ("%s\n", procs[i]->name);
 	}
 }

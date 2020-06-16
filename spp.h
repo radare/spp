@@ -56,7 +56,9 @@
 #define snprintf _snprintf
 #endif
 
+#ifndef VERSION
 #define VERSION "1.0"
+#endif
 
 #define MAXIFL 128
 
