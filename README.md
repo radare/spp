@@ -1,9 +1,9 @@
 spp
 ===
 
-Author: pancake (pancake@nopcode.org)
-History: 2009-2020
-License: MIT
+* **Author**: pancake (pancake@nopcode.org)
+* **History**: 2009-2020
+* **License**: MIT
 
 Description
 -----------

@@ -8,6 +8,10 @@
 #include <stdbool.h>
 #include <errno.h>
 
+#ifndef VERSION
+#define VERSION "1.2.0"
+#endif
+
 #ifdef S_API
 #undef S_API
 #endif
@@ -54,10 +58,6 @@
 #define pclose   _pclose
 #define srandom  srand
 #define snprintf _snprintf
-#endif
-
-#ifndef VERSION
-#define VERSION "1.0"
 #endif
 
 #define MAXIFL 128
