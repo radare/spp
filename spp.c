@@ -344,9 +344,19 @@ void out_printf(Output *out, char *str, ...) {
 	va_end (ap);
 }
 
-// new api
+static void spp_proc_init(SppProc *p) {
+	p->state.lineno = 1;
+	p->state.ifl = 0;
+	size_t i;
+	for (i = 0; i < MAXIFL; i++) {
+		p->state.echo[i] = p->default_echo;
+	}
+}
 
 S_API char *spp_eval_str(SppProc *p, const char *code) {
+	if (p) {
+		spp_proc_init (p);
+	}
 	Output out;
 	out.fout = NULL;
 	out.cout = r_strbuf_new (NULL);
