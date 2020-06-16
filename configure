@@ -105,12 +105,12 @@ done
 : ${INSTALL_PROGRAM_STRIP:=${INSTALL} -m 755 -s}
 : ${INSTALL_MAN:=${INSTALL} -m 444}
 : ${INSTALL_LIB:=${INSTALL} -m 755 -c}
- PKGNAME='spp' ; VERSION='1.1' ; VERSION_MAJOR=1; VERSION_MINOR=1; VERSION_PATCH=0; VERSION_NUMBER=10100; CONTACT_MAIL="pancake@nopcode.org" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@nopcode.org>" ;
+ PKGNAME='spp' ; VERSION='1.1.0' ; VERSION_MAJOR=1; VERSION_MINOR=1; VERSION_PATCH=0; VERSION_NUMBER=10100; CONTACT_MAIL="pancake@nopcode.org" ; CONTACT_NAME="pancake" ; CONTACT="pancake <pancake@nopcode.org>" ;
 }
 
 show_usage() {
 cat <<EOF2
-'configure' configures spp-1.1 to adapt to many kinds of systems.
+'configure' configures spp-1.1.0 to adapt to many kinds of systems.
 
 Usage: ./configure [OPTION]... [VAR=VALUE]...
 
@@ -167,7 +167,7 @@ take_environ() {
 }
 
 show_version() {
-echo "spp-1.1 configuration script done with acr v1.9.0.
+echo "spp-1.1.0 configuration script done with acr v1.9.0.
 The 'Free Software Foundation' message is only for autodetection.
 Originally written by pancake <nopcode.org>."
 exit 0
@@ -191,7 +191,7 @@ case $flag in
 	show_version ; ;;
 -r|--r|--report)
 echo "PKGNAME:   spp"
-echo "VERSION:   1.1"
+echo "VERSION:   1.1.0"
 echo "FLAGS:     --without-fork --enable-r2"
 	exit 0
 	;;
