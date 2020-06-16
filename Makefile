@@ -1,3 +1,5 @@
+include config.mk
+
 PREFIX?=/usr
 BINDIR=${DESTDIR}${PREFIX}/bin
 INSTALL_BIN=install -m 0755
@@ -5,9 +7,16 @@ OBJ=spp.o main.o r_api.o
 ODF=$(subst .o,.d,$(OBJ))
 BIN=spp
 
+ifeq ($(SPP_USE_R2),1)
+CFLAGS+=$(shell pkg-config --cflags r_util)
+LDFLAGS+=$(shell pkg-config --libs r_util)
+endif
+
 CFLAGS?=-Wall -O2
 
 CFLAGS+=-fvisibility=hidden
+CFLAGS+=-DUSE_R2=$(SPP_USE_R2)
+CFLAGS+=-DHAVE_FORK=$(SPP_HAVE_FORK)
 
 all: ${BIN}
 

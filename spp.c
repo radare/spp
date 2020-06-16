@@ -102,14 +102,11 @@ int do_fputs(Output *out, char *str) {
 	return printed;
 }
 
-S_API void spp_proc_eval(SppProc *p, char *buf, Output *out) {
-	SppProc *op = proc;
-	proc = p;
-	spp_eval (buf, out);
-	proc = op;
+S_API void spp_eval(char *buf, Output *out) {
+	spp_proc_eval (proc, buf, out);
 }
 
-S_API void spp_eval(char *buf, Output *out) {
+S_API void spp_proc_eval(SppProc *proc, char *buf, Output *out) {
 	char *ptr, *ptr2;
 	char *ptrr = NULL;
 	int delta;
@@ -345,4 +342,19 @@ void out_printf(Output *out, char *str, ...) {
 		r_strbuf_append (out->cout, tmp);
 	}
 	va_end (ap);
+}
+
+// new api
+
+S_API char *spp_eval_str(SppProc *p, const char *code) {
+	Output out;
+	out.fout = NULL;
+	out.cout = r_strbuf_new (NULL);
+	r_strbuf_init (out.cout);
+	char *c = strdup (code);
+	if (c) {
+		spp_proc_eval (p, c, &out);
+		free (c);
+	}
+	return r_strbuf_drain (out.cout);
 }

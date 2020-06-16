@@ -1,5 +1,6 @@
-/* radare - LGPL - Copyright 2013-2019 - pancake */
+/* radare2 - LGPL - Copyright 2013-2020 - pancake */
 
+#include <unistd.h>
 #include "spp.h"
 #include "r_api.h"
 
@@ -38,7 +39,7 @@ bool r_strbuf_set(SStrBuf *sb, const char *s) {
 	return true;
 }
 
-int r_strbuf_append(SStrBuf *sb, const char *s) {
+bool r_strbuf_append(SStrBuf *sb, const char *s) {
 	int l = strlen (s);
 	if (l < 1) {
 		return false;
@@ -73,6 +74,14 @@ int r_strbuf_append(SStrBuf *sb, const char *s) {
 
 char *r_strbuf_get(SStrBuf *sb) {
 	return sb? (sb->ptr? sb->ptr: sb->buf) : NULL;
+}
+
+char *r_strbuf_drain(SStrBuf *sb) {
+	char *res = sb->ptr? sb->ptr: strdup (sb->buf);
+	sb->ptr = NULL;
+	r_strbuf_fini (sb);
+	free (sb);
+	return res;
 }
 
 void r_strbuf_free(SStrBuf *sb) {

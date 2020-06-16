@@ -60,14 +60,6 @@
 
 #define MAXIFL 128
 
-#ifndef HAVE_FORK
-#define HAVE_FORK 1
-#endif
-
-#ifndef HAVE_FORK
-#define HAVE_FORK 1
-#endif
-
 #ifndef DLL_LOCAL
 #ifdef _MSC_VER
 #define DLL_LOCAL
@@ -148,6 +140,11 @@ typedef struct Proc {
 	SppBuf buf;
 } SppProc;
 
+typedef struct spp_t {
+	SppProc *proc;
+	Output *out;
+} Spp;
+
 S_API int spp_file(const char *file, Output *out);
 S_API int spp_run(char *buf, Output *out);
 S_API void spp_eval(char *buf, Output *out);
@@ -157,10 +154,18 @@ S_API void spp_proc_list(void);
 S_API void spp_proc_list_kw(void);
 S_API void spp_proc_set(SppProc *p, const char *arg, int fail);
 
+S_API Spp *spp_new(SppProc *proc);
+S_API char *spp_parse(Spp *s, const char *input);
+S_API void spp_free(Spp *s);
+
 #if DEBUG
 #define D if (1)
 #else
 #define D if (0)
+#endif
+
+#ifndef HAVE_FORK
+#define HAVE_FORK 1
 #endif
 
 #endif
