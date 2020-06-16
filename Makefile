@@ -1,8 +1,8 @@
 include config.mk
 
+PWD=$(shell pwd)
 PREFIX?=/usr
 BINDIR=${DESTDIR}${PREFIX}/bin
-INSTALL_BIN=install -m 0755
 OBJ=spp.o main.o r_api.o
 ODF=$(subst .o,.d,$(OBJ))
 BIN=spp
@@ -17,6 +17,7 @@ CFLAGS?=-Wall -O2
 CFLAGS+=-fvisibility=hidden
 CFLAGS+=-DUSE_R2=$(SPP_USE_R2)
 CFLAGS+=-DHAVE_FORK=$(SPP_HAVE_FORK)
+CFLAGS+=-DVERSION=$(VERSION)
 
 all: ${BIN}
 
@@ -47,7 +48,11 @@ test:
 
 install:
 	mkdir -p ${BINDIR}
-	${INSTALL_BIN} ${BIN} ${BINDIR}
+	${INSTALL_PROGRAM} ${BIN} ${BINDIR}
+
+symstall:
+	mkdir -p ${BINDIR}
+	ln -fs $(PWD)/${BIN} ${BINDIR}/$(BIN)
 
 uninstall:
 	rm -f ${BINDIR}/${BIN}
