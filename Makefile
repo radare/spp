@@ -3,7 +3,7 @@ include config.mk
 PWD=$(shell pwd)
 PREFIX?=/usr
 BINDIR=${DESTDIR}${PREFIX}/bin
-OBJ=spp.o main.o
+OBJ=spp.o bin/main.o
 # r_api.o
 ODF=$(subst .o,.d,$(OBJ))
 BIN=spp

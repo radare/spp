@@ -1,6 +1,10 @@
 /* radare2 - LGPL - Copyright 2013-2020 - pancake */
 
+#if __UNIX__
 #include <unistd.h>
+#elif __WINDOWS__
+#include <windows.h>
+#endif
 #include "spp.h"
 #include "r_api.h"
 
@@ -117,13 +121,13 @@ int r_sys_setenv(const char *key, const char *value) {
 char *r_sys_getenv(const char *key) {
 #if __WINDOWS__
 	DWORD dwRet;
-	char *envbuf = NULL, tmp_ptr;
+	char *envbuf = NULL, *tmp_ptr;
 	char *val = NULL;
 	const int TMP_BUFSIZE = 4096;
 	if (!key) {
 		return NULL;
 	}
-	envbuf = (envbuf)malloc (sizeof (envbuf) * TMP_BUFSIZE);
+	envbuf = malloc (sizeof (envbuf) * TMP_BUFSIZE);
 	if (!envbuf) {
 		goto err_r_sys_get_env;
 	}
@@ -133,7 +137,7 @@ char *r_sys_getenv(const char *key) {
 			goto err_r_sys_get_env;
 		}
 	} else if (TMP_BUFSIZE < dwRet) {
-		tmp_ptr = (char *)realloc (envbuf, dwRet);
+		tmp_ptr = realloc (envbuf, dwRet);
 		if (!tmp_ptr) {
 			goto err_r_sys_get_env;
 		}
